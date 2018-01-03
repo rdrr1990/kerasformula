@@ -21,7 +21,16 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 ```
 
 
-The goal of this document is to introduce `kms` (as in `keras_model_sequential()`), a regression-style function which allows users to call `keras` neural nets with `R` `formula` objects. `kms` splits training and test data into sparse matrices.`kms` also auto-detects whether the dependent variable is categorical or binary. `kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets (dense neural nets of various size, dropout rates, etc.).  The example below also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models). 
+The goal of this document is to introduce `kms` (as in `keras_model_sequential()`), a regression-style function which allows users to call `keras` neural nets with `R` `formula` objects. Make sure that `keras` is properly configured:
+
+```
+install.packages("keras")
+library(keras)
+install_keras()
+```
+See https://keras.rstudio.com/ for details.  
+
+`kms` splits training and test data into sparse matrices.`kms` also auto-detects whether the dependent variable is categorical or binary. `kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets (dense neural nets of various size, dropout rates, etc.).  The example below also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models). 
 
 This example works with some of the `imdb` data that comes with library(`keras`). Specifically, this example compares the default dense model that `ksm` generates to the `lstm` model described [here](https://keras.rstudio.com/articles/examples/imdb_lstm.html). To control runtime, the number of features are limited and only a sliver of the data is used.
 

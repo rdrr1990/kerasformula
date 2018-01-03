@@ -28,7 +28,6 @@
 #' #             DF, pTraining = 0.9, Nepochs = 10, batch_size = 16)
 #' # cars_out <- kms("mpg %/% 1 ~ grepl('Mazda', rownames(mtcars), ignore.case = TRUE)", mtcars)
 #' @author Pete Mohanty
-#' @importFrom keras keras_model_sequential to_categorical layer_dense layer_dropout layer_lstm fit evaluate predict_classes pad_sequences
 #' @importFrom Matrix sparse.model.matrix
 #' @importFrom dplyr n_distinct
 #' @importFrom stats as.formula
