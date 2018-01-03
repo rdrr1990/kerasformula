@@ -1,0 +1,19 @@
+Package: kerasformula
+Type: Package
+Title: A High-Level ("user friendly") R Interface for Keras neural nets
+Version: 0.1.0
+Author: Pete Mohanty [aut, cre]
+Authors@R: person("Pete", "Mohanty", role = c("aut", "cre"), email = "pete.mohanty@gmail.com")
+Maintainer: Pete Mohanty <pete.mohanty@gmail.com>
+Description: Adds a high-level interface for Keras neural nets with kms(), which builds and fits a keras_sequential_model (or, optionally, allows the user to pass a compiled model) based on an R formula. 
+    kms accepts a number of parameters (like loss, optimizer, and Nepochs) and splits the data into test and training sparse matrices (from library Matrix). kms returns a single object with predictions, a confusion matrix, as well as details about the function call.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+VignetteBuilder: knitr
+URL: https://github.com/rdrr1990/kerasformula
+BugReports: https://github.com/rdrr1990/kerasformula/issues
+Depends: keras
+Suggests: tensorflow, ggplot2
+
