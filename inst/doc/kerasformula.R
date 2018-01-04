@@ -5,10 +5,10 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 ## ---- eval = FALSE-------------------------------------------------------
 #  install.packages("keras")
 #  library(keras)
-#  install_keras()
+#  install_keras() # see https://keras.rstudio.com/ for details.
+#  library(kerasformula)
 
 ## ---- eval = FALSE-------------------------------------------------------
-#  library(kerasformula)
 #  max_features <- 5000 # 5,000 words (ranked by popularity) found in movie reviews
 #  maxlen <- 50  # Cut texts after 50 words (among top max_features most common words)
 #  Nsample <- 1000
@@ -34,12 +34,12 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 ## ---- eval=FALSE---------------------------------------------------------
 #  cat('Test accuracy:', out_dense$evaluations$acc, "\n")
 
-## ------------------------------------------------------------------------
-out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, 
-                 layers = list(units = c(512, 256, 128, NA), 
-                               activation = c("relu", "relu", "relu", "softmax"), 
-                               dropout = c(0.5, 0.4, 0.3, NA)))
-out_dense$confusion
+## ---- eval = FALSE-------------------------------------------------------
+#  out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10,
+#                   layers = list(units = c(512, 256, 128, NA),
+#                                 activation = c("relu", "relu", "relu", "softmax"),
+#                                 dropout = c(0.5, 0.4, 0.3, NA)))
+#  out_dense$confusion
 
 ## ---- eval = FALSE-------------------------------------------------------
 #  cat('Test accuracy:', out_dense$evaluations$acc, "\n")
