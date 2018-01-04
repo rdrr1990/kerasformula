@@ -5,8 +5,8 @@ Version: 0.1.0
 Author: Pete Mohanty [aut, cre]
 Authors@R: person("Pete", "Mohanty", role = c("aut", "cre"), email = "pete.mohanty@gmail.com")
 Maintainer: Pete Mohanty <pete.mohanty@gmail.com>
-Description: Adds a high-level interface for 'Keras' neural nets with kms(). Based on an R formula, kms() can build and fit a dense neural net. kms() can also accept a compiled keras::keras_sequential_model(). 
-    kms() accepts a number of parameters (like loss, optimizer, and Nepochs) and splits the data into test and training matrices (sparse matrices from library Matrix). kms() returns a single object with predictions, a confusion matrix, and function call details.
+Description: Adds a high-level interface for 'keras' neural nets. kms() fits neural net and accepts R formulas to aid data munging and hyperparameter selection. kms() can optionally accept a compiled keras::keras_sequential_model(). 
+    kms() accepts a number of parameters (like loss, optimizer, and Nepochs) and splits the data into sparse test and training matrices. kms() returns a single object with predictions, a confusion matrix, and function call details.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
