@@ -5,9 +5,9 @@
 \title{kms}
 \usage{
 kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
-  c(128, NA), activation = c("relu", "softmax"), dropout = c(0.4, NA)),
-  pTraining = 0.8, seed = NULL, validation_split = 0.2, Nepochs = 25,
-  batch_size = 32, loss = NULL, metrics = c("accuracy"),
+  c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4,
+  0.3, NA)), pTraining = 0.8, seed = NULL, validation_split = 0.2,
+  Nepochs = 25, batch_size = 32, loss = NULL, metrics = c("accuracy"),
   optimizer = "optimizer_rmsprop", ...)
 }
 \arguments{
@@ -41,19 +41,20 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training.
 }
 \description{
-A regression-style function call for Keras model sequential (KMS) which uses sparse matrices.
+A regression-style function call for keras_model_sequential() which uses formulas and sparse matrices. A sequential model is a linear stack of layers.
 }
 \examples{
-# not run
-# n <- 1000
-# p <- 26
-# X <- matrix(runif(n*p), ncol = p) 
-# y <- letters[apply(X, 1, which.max)]
-# DF <- data.frame(y, X)
-# out <- kms("y ~ X", DF)
-# out2 <- kms("y ~ . - 1",         # use X1 ... X26 but no intercept  
-#             DF, pTraining = 0.9, Nepochs = 10, batch_size = 16)
-# cars_out <- kms("mpg \%/\% 1 ~ grepl('Mazda', rownames(mtcars), ignore.case = TRUE)", mtcars)
+mtcars$make <- unlist(lapply(strsplit(rownames(mtcars), " "), function(tokens) tokens[1]))
+company <- kms(make ~ ., mtcars)
+# out of sample accuracy
+pCorrect <- mean(company$y_test == company$predictions)
+pCorrect
+company$confusion
+# plot(history$company) # helps pick Nepochs
+company <- kms(make ~ ., mtcars, seed = 2018,
+               layers = list(units = c(11, 9, NA), activation = c("relu", "relu", "softmax"),
+               dropout = c(0.4, 0.3, NA)))
+
 }
 \author{
 Pete Mohanty

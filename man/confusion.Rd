@@ -18,6 +18,12 @@ confusion(object = NULL, y_test = NULL, predictions = NULL,
 }
 \value{
 confusion matrix or table as specified by return_xtab.
+#' @examples
+mtcars$make <- unlist(lapply(strsplit(rownames(mtcars), " "), function(tokens) tokens[1]))
+company <- kms(make ~ ., mtcars)
+company$confusion
+confusion(company)     # same as above
+confusion(company, return_xtab = FALSE) # focus on pCorrect, most common errors
 }
 \description{
 Confusion matrix or (for larger number of levels) confusion table.

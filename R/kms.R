@@ -1,6 +1,6 @@
 #' kms
 #' 
-#' A regression-style function call for Keras model sequential (KMS) which uses sparse matrices.
+#' A regression-style function call for keras_model_sequential() which uses formulas and sparse matrices. A sequential model is a linear stack of layers.
 #' 
 #' @param input_formula an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. The outcome, y, is assumed to be categorical, e.g. "stars ~ mentions.tasty + mentions.fun".
 #' @param data a data.frame.
@@ -17,26 +17,28 @@
 #' @param ... Additional parameters to be passsed to Matrix::sparse.model.matrix.
 #' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training.
 #' @examples
-#' # not run
-#' # n <- 1000
-#' # p <- 26
-#' # X <- matrix(runif(n*p), ncol = p) 
-#' # y <- letters[apply(X, 1, which.max)]
-#' # DF <- data.frame(y, X)
-#' # out <- kms("y ~ X", DF)
-#' # out2 <- kms("y ~ . - 1",         # use X1 ... X26 but no intercept  
-#' #             DF, pTraining = 0.9, Nepochs = 10, batch_size = 16)
-#' # cars_out <- kms("mpg %/% 1 ~ grepl('Mazda', rownames(mtcars), ignore.case = TRUE)", mtcars)
+#' mtcars$make <- unlist(lapply(strsplit(rownames(mtcars), " "), function(tokens) tokens[1]))
+#' company <- kms(make ~ ., mtcars)
+#' # out of sample accuracy
+#' pCorrect <- mean(company$y_test == company$predictions)
+#' pCorrect
+#' company$confusion
+#' # plot(history$company) # helps pick Nepochs
+#' company <- kms(make ~ ., mtcars, seed = 2018,
+#'                layers = list(units = c(11, 9, NA), activation = c("relu", "relu", "softmax"),
+#'                dropout = c(0.4, 0.3, NA)))
+#' 
 #' @author Pete Mohanty
 #' @importFrom keras to_categorical keras_model_sequential layer_dense layer_dropout compile fit evaluate predict_classes
 #' @importFrom Matrix sparse.model.matrix
+#' @importFrom stats runif
 #' @importFrom dplyr n_distinct %>%
 #' @importFrom stats as.formula
 #' 
 #' @export
 kms <- function(input_formula, data, keras_model_seq = NULL, 
-                 layers = list(units = c(128, NA), activation = c("relu", "softmax"),
-                               dropout = c(0.4, NA)), 
+                 layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"),
+                               dropout = c(0.4, 0.3, NA)), 
                  pTraining = 0.8, seed = NULL, validation_split = 0.2, 
                  Nepochs = 25, batch_size = 32, loss = NULL, metrics = c("accuracy"),
                  optimizer = "optimizer_rmsprop", ...){
@@ -52,8 +54,11 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   P <- ncol(x_tmp)
   N <- nrow(x_tmp)
   
-  seed <- if(is.null(seed)) sample(range(.Random.seed), size = 1) else seed
+  if(is.null(seed)) 
+    seed <- runif(1, min = as.numeric(format(Sys.time(), "%OS")), 
+                  max = as.numeric(format(Sys.time(), "%OS6"))) %/% 0.000001
   set.seed(seed)
+  
   split <- sample(c("train", "test"), size = N, 
                   replace = TRUE, prob = c(pTraining, 1 - pTraining))
   

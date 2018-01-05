@@ -29,12 +29,13 @@ First, make sure that `keras` is properly configured:
 install.packages("keras")
 library(keras)
 install_keras() # see https://keras.rstudio.com/ for details. 
-library(kerasformula)
 ```
 
 `kms` splits training and test data into sparse matrices.`kms` also auto-detects whether the dependent variable is categorical or binary. `kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets (dense neural nets of various input shapes and dropout rates). The final example below also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models). 
 
-This example works with some of the `imdb` movie review data that comes with library(`keras`). Specifically, this example compares the default dense model that `ksm` generates to the `lstm` model described [here](https://keras.rstudio.com/articles/examples/imdb_lstm.html). To expedite package building and installation, the code below is not actually run but can be run in under six minutes on a 2017 MacBook Pro with 16 GB of RAM (of which the majority of the time is for the lstm). 
+# IMDB Movie Reviews
+
+This example works with some of the `imdb` movie review data that comes with library(`keras`). Specifically, this example compares the default dense model that `ksm` generates to the `lstm` model described [here](https://keras.rstudio.com/articles/examples/imdb_lstm.html). To expedite package building and installation, the code below is not actually run but can be run in under six minutes on a 2017 MacBook Pro with 16 GB of RAM (of which the majority of the time is for the lstm).
 
 ```{r, eval = FALSE}
 max_features <- 5000 # 5,000 words (ranked by popularity) found in movie reviews

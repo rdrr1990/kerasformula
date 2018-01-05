@@ -6,7 +6,6 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 #  install.packages("keras")
 #  library(keras)
 #  install_keras() # see https://keras.rstudio.com/ for details.
-#  library(kerasformula)
 
 ## ---- eval = FALSE-------------------------------------------------------
 #  max_features <- 5000 # 5,000 words (ranked by popularity) found in movie reviews
