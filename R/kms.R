@@ -17,17 +17,23 @@
 #' @param ... Additional parameters to be passsed to Matrix::sparse.model.matrix.
 #' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training.
 #' @examples
-#' mtcars$make <- unlist(lapply(strsplit(rownames(mtcars), " "), function(tokens) tokens[1]))
-#' company <- kms(make ~ ., mtcars)
-#' # out of sample accuracy
-#' pCorrect <- mean(company$y_test == company$predictions)
-#' pCorrect
-#' company$confusion
-#' # plot(history$company) # helps pick Nepochs
-#' company <- kms(make ~ ., mtcars, seed = 2018,
+#' \dontrun{
+#' if(is_keras_available()){
+#' 
+#'  mtcars$make <- unlist(lapply(strsplit(rownames(mtcars), " "), function(tokens) tokens[1]))
+#'  company <- kms(make ~ ., mtcars)
+#'  # out of sample accuracy
+#'  pCorrect <- mean(company$y_test == company$predictions)
+#'  pCorrect
+#'  company$confusion
+#'  # plot(history$company) # helps pick Nepochs
+#'  company <- kms(make ~ ., mtcars, seed = 2018,
 #'                layers = list(units = c(11, 9, NA), activation = c("relu", "relu", "softmax"),
 #'                dropout = c(0.4, 0.3, NA)))
-#' 
+#' }else{
+#'    cat("Please run install_keras() before using kms(). ?install_keras for options and details." )
+#' }
+#'  
 #' @author Pete Mohanty
 #' @importFrom keras to_categorical keras_model_sequential layer_dense layer_dropout compile fit evaluate predict_classes
 #' @importFrom Matrix sparse.model.matrix
