@@ -23,16 +23,20 @@ library(kerasformula)
 install_keras()                        # first time only. see ?install_keras() for install options
 library(rtweet)                        # see https://github.com/mkearney/rtweet
 ```
+
 Let's look at #rstats tweets (excluding retweets) as of `r format(Sys.time(), "%B %d, %Y")` at `r format(Sys.time(), "%H:%M")`. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
 
 ```{r download}
 library(rtweet)
 rstats <- search_tweets("#rstats", n = 10000, include_rts = FALSE)
 ```
+
 Suppose our goal is to predict how popular tweets will be based on how often the tweet was retweeted and favorited (which correlate strongly).
+
 ```{r}
 cor(rstats$favorite_count, rstats$retweet_count, method="spearman")
 ```
+
 And let's suppose we are interested in putting tweets into categories based on popularity but we're not sure how finely-grained we want to make distinctions (a practical problem that turns out to have big implications for predictive accuracy). Since few tweeets go viral, the data are quite skewed towards zero. 
 
 ```{r, echo = FALSE}
@@ -41,6 +45,7 @@ rstats %>% select(favorite_count, retweet_count) %>% melt %>%
 ggplot(aes(log10(value + 1), fill=variable)) + geom_density(alpha=0.5) + ggtitle("#rstats tweets")
 
 ```
+
 Some of the data, like `rstats$mentions_screen_name` comes in a list of varying lengths, so let's write a helper function to count non-NA entries.  
 
 ```{r helper}
@@ -53,6 +58,7 @@ n <- function(x){
 ```
 
 Let's start with a dense neural net, the default of `kms`. We can use base R functions to help clean the data--in this case, `cut` to discretize the outcome, `grepl` to look for key words, and `weekdays` and `format` to capture different aspects of the time the tweet was posted. 
+
 ```{r first_model}
 breaks <- c(-1, 0, 1, 10, 100, 1000, 10000)
 popularity <- kms("cut(retweet_count + favorite_count, breaks) ~  
@@ -82,7 +88,9 @@ plot(popularity$history) + ggtitle(paste("#rstat popularity (new breakpoints):",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
                                          "out-of-sample accuracy"))
 ```
+
 Suppose we want to add a little more data. Let's first store the input formula.
+
 ```{r save_formula}
 pop_input <- "cut(retweet_count + favorite_count, breaks) ~  
                           n(hashtags) + n(mentions_screen_name) + n(urls_url) +
@@ -109,6 +117,7 @@ plot(popularity$history) + ggtitle(paste("#rstat popularity (with 'mentions'):",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
                                          "out-of-sample accuracy"))
 ```
+
 We could add more data, perhaps add individual words from the text or some other summary stat (`mean(text %in% LETTERS)` to see if all caps explains popularity). But let's alter the neural net.
 
 The `input.formula` is used to create a sparse model matrix. For example, `rstats$source` (Twitter or Twitter-client application type) and `rstats$screen_name` are character vectors that will be dummied out. How many columns does it have?

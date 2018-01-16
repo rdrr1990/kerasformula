@@ -1,5 +1,6 @@
 Analyzing rtweet data with kerasformula
 ================
+Pete Mohanty
 
 This document introduces `kms`, the main function of `library(kerasformula)`. Newly on `CRAN`, `kerasformula` offers a high-level interface for `keras`. Many classic machine learning tutorials assume that data come in a relatively homogenous form (e.g., pixels for digit recognition or counts or ranks words) which can make coding somewhat cumbersome when data come in a heterogenous data frame. `kms` takes advantage of the flexibility of R formulas to smooth this process.
 
@@ -14,7 +15,7 @@ install_keras()                        # first time only. see ?install_keras() f
 library(rtweet)                        # see https://github.com/mkearney/rtweet
 ```
 
-Let's look at \#rstats tweets (excluding retweets) as of January 15, 2018 at 11:39. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
+Let's look at \#rstats tweets (excluding retweets) as of January 15, 2018 at 15:54. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
 
 ``` r
 library(rtweet)
@@ -27,11 +28,13 @@ Suppose our goal is to predict how popular tweets will be based on how often the
 cor(rstats$favorite_count, rstats$retweet_count, method="spearman")
 ```
 
-    [1] 0.7096207
+    [1] 0.7114875
 
 And let's suppose we are interested in putting tweets into categories based on popularity but we're not sure how finely-grained we want to make distinctions (a practical problem that turns out to have big implications for predictive accuracy). Since few tweeets go viral, the data are quite skewed towards zero.
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-2-1.png) Some of the data, like `rstats$mentions_screen_name` comes in a list of varying lengths, so let's write a helper function to count non-NA entries.
+![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-2-1.png)
+
+Some of the data, like `rstats$mentions_screen_name` comes in a list of varying lengths, so let's write a helper function to count non-NA entries.
 
 ``` r
 n <- function(x){
@@ -66,14 +69,14 @@ popularity$confusion
 
                    
                     (-1,0] (0,1] (1,10] (10,100] (100,1e+03] (1e+03,1e+04]
-      (-1,0]            27    12      7       13           0             0
-      (0,1]             19    33     32       33           0             0
-      (1,10]             2    11     56      134           0             0
-      (10,100]           0     1      9      103           0             0
-      (100,1e+03]        0     0      0        8           0             0
+      (-1,0]            31     8      2        9           0             0
+      (0,1]             29    23      8       43           0             0
+      (1,10]            13    31     16      157           0             0
+      (10,100]           0     2      2      111           0             0
+      (100,1e+03]        0     0      0        7           0             0
       (1e+03,1e+04]      0     0      0        0           0             0
 
-The model only classifies about 44% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot suggests that out of sample accuracy is not very stable. We can easily change the breakpoints and number of epochs.
+The model only classifies about 37% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot suggests that out of sample accuracy is not very stable. We can easily change the breakpoints and number of epochs.
 
 ``` r
 breaks <- c(-1, 0, 1, 25, 50, 75, 100, 500, 1000, 10000)
@@ -89,7 +92,9 @@ plot(popularity$history) + ggtitle(paste("#rstat popularity (new breakpoints):",
                                          "out-of-sample accuracy"))
 ```
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/change_breaks-1.png) Suppose we want to add a little more data. Let's first store the input formula.
+![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/change_breaks-1.png)
+
+Suppose we want to add a little more data. Let's first store the input formula.
 
 ``` r
 pop_input <- "cut(retweet_count + favorite_count, breaks) ~  
@@ -118,7 +123,9 @@ plot(popularity$history) + ggtitle(paste("#rstat popularity (with 'mentions'):",
                                          "out-of-sample accuracy"))
 ```
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/add_mentions-1.png) We could add more data, perhaps add individual words from the text or some other summary stat (`mean(text %in% LETTERS)` to see if all caps explains popularity). But let's alter the neural net.
+![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/add_mentions-1.png)
+
+We could add more data, perhaps add individual words from the text or some other summary stat (`mean(text %in% LETTERS)` to see if all caps explains popularity). But let's alter the neural net.
 
 The `input.formula` is used to create a sparse model matrix. For example, `rstats$source` (Twitter or Twitter-client application type) and `rstats$screen_name` are character vectors that will be dummied out. How many columns does it have?
 
@@ -126,7 +133,7 @@ The `input.formula` is used to create a sparse model matrix. For example, `rstat
 popularity$P
 ```
 
-    [1] 1810
+    [1] 1787
 
 Say we wanted to reshape the layers to transition more gradually from the input shape to the output.
 
@@ -166,9 +173,9 @@ colMeans(accuracy)
 ```
 
     Nbatch_16 Nbatch_32 Nbatch_64 
-    0.4170338 0.4683067 0.4818758 
+    0.3987599 0.5745734 0.5011924 
 
-For the sake of curtailing runtime, the number of epochs has been set arbitrarily short but, from those results, 64 is the best batch size.
+For the sake of curtailing runtime, the number of epochs has been set arbitrarily short but, from those results, 32 is the best batch size.
 
 Inputting a Compiled Keras Model
 ================================
