@@ -17,17 +17,16 @@
 #' @param ... Additional parameters to be passsed to Matrix::sparse.model.matrix.
 #' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training.
 #' @examples
-#' \dontrun{
 #' if(is_keras_available()){
 #' 
 #'  mtcars$make <- unlist(lapply(strsplit(rownames(mtcars), " "), function(tokens) tokens[1]))
-#'  company <- kms(make ~ ., mtcars)
+#'  company <- kms(make ~ ., mtcars, Nepochs = 10)
 #'  # out of sample accuracy
 #'  pCorrect <- mean(company$y_test == company$predictions)
 #'  pCorrect
 #'  company$confusion
 #'  # plot(history$company) # helps pick Nepochs
-#'  company <- kms(make ~ ., mtcars, seed = 2018,
+#'  company <- kms(make ~ ., mtcars, Nepochs = 3, seed = 2018,
 #'                layers = list(units = c(11, 9, NA), activation = c("relu", "relu", "softmax"),
 #'                dropout = c(0.4, 0.3, NA)))
 #' }else{
@@ -142,7 +141,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                  evaluations = evals, predictions = y_fit,
                  input_formula = input_formula, model = keras_model_seq, 
                  loss = loss, optimizer = optimizer, metrics = metrics,
-                 N = N, P = P,
+                 N = N, P = P, K = n_distinct_y,
                  y_test = y[split == "test"],
                  seed = seed, split = split)
   
