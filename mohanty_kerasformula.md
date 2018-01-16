@@ -15,7 +15,7 @@ install_keras()                        # first time only. see ?install_keras() f
 library(rtweet)                        # see https://github.com/mkearney/rtweet
 ```
 
-Let's look at \#rstats tweets (excluding retweets) as of January 15, 2018 at 15:54. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
+Let's look at \#rstats tweets (excluding retweets) as of January 15, 2018 at 16:15. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
 
 ``` r
 library(rtweet)
@@ -28,7 +28,7 @@ Suppose our goal is to predict how popular tweets will be based on how often the
 cor(rstats$favorite_count, rstats$retweet_count, method="spearman")
 ```
 
-    [1] 0.7114875
+    [1] 0.7108667
 
 And let's suppose we are interested in putting tweets into categories based on popularity but we're not sure how finely-grained we want to make distinctions (a practical problem that turns out to have big implications for predictive accuracy). Since few tweeets go viral, the data are quite skewed towards zero.
 
@@ -58,7 +58,7 @@ popularity <- kms("cut(retweet_count + favorite_count, breaks) ~
                           format(rstats$created_at, '%H')", rstats)
 plot(popularity$history) + ggtitle(paste("#rstat popularity:",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
-                                         "out-of-sample accuracy"))
+                                         "out-of-sample accuracy")) + theme_minimal()
 ```
 
 ![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/first_model-1.png)
@@ -69,14 +69,14 @@ popularity$confusion
 
                    
                     (-1,0] (0,1] (1,10] (10,100] (100,1e+03] (1e+03,1e+04]
-      (-1,0]            31     8      2        9           0             0
-      (0,1]             29    23      8       43           0             0
-      (1,10]            13    31     16      157           0             0
-      (10,100]           0     2      2      111           0             0
-      (100,1e+03]        0     0      0        7           0             0
+      (-1,0]            36     1      1        0           0             0
+      (0,1]             77    19     18        2           0             0
+      (1,10]           154    13     38        9           0             0
+      (10,100]          54     4      7       44           0             0
+      (100,1e+03]        5     0      0        8           0             0
       (1e+03,1e+04]      0     0      0        0           0             0
 
-The model only classifies about 37% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot suggests that out of sample accuracy is not very stable. We can easily change the breakpoints and number of epochs.
+The model only classifies about 28% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot suggests that out of sample accuracy is not very stable. We can easily change the breakpoints and number of epochs.
 
 ``` r
 breaks <- c(-1, 0, 1, 25, 50, 75, 100, 500, 1000, 10000)
@@ -89,7 +89,7 @@ popularity <- kms("cut(retweet_count + favorite_count, breaks) ~
                           format(rstats$created_at, '%H')", rstats, Nepochs = 10)
 plot(popularity$history) + ggtitle(paste("#rstat popularity (new breakpoints):",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
-                                         "out-of-sample accuracy"))
+                                         "out-of-sample accuracy")) + theme_minimal()
 ```
 
 ![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/change_breaks-1.png)
@@ -118,12 +118,9 @@ for(i in mentions)
   pop_input <- paste0(pop_input, " + ", "grepl(", i, ", mentions_user_id)")
 
 popularity <- kms(pop_input, rstats, Nepochs = 10)
-plot(popularity$history) + ggtitle(paste("#rstat popularity (with 'mentions'):",
-                                         paste0(round(100*popularity$evaluations$acc, 1), "%"),
-                                         "out-of-sample accuracy"))
 ```
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/add_mentions-1.png)
+![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/mentionsplot-1.png)
 
 We could add more data, perhaps add individual words from the text or some other summary stat (`mean(text %in% LETTERS)` to see if all caps explains popularity). But let's alter the neural net.
 
@@ -133,7 +130,7 @@ The `input.formula` is used to create a sparse model matrix. For example, `rstat
 popularity$P
 ```
 
-    [1] 1787
+    [1] 1786
 
 Say we wanted to reshape the layers to transition more gradually from the input shape to the output.
 
@@ -142,12 +139,9 @@ popularity <- kms(pop_input, rstats,
                   layers = list(units = c(1024, 512, 256, 128, NA),
                                 activation = c("relu", "relu", "relu", "relu", "softmax"), 
                                 dropout = c(0.5, 0.45, 0.4, 0.35, NA)))
-plot(popularity$history) + ggtitle(paste("#rstat popularity (custom dense neural net):",
-                                         paste0(round(100*popularity$evaluations$acc, 1), "%"),
-                                         "out-of-sample accuracy"))
 ```
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/custom_dense-1.png)
+![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/customplot-1.png)
 
 `kms` builds a `keras_sequential_model()`, which is a stack of linear layers. The input shape is determined by the dimensionality of the model matrix (`popularity$P`) but after that users are free to determine the number of layers and so on. The `kms` argument `layers` expects a list, the first entry of which is a vector `units` with which to call `keras::layer_dense()`. The first element the number of `units` in the first layer, the second element for the second layer, and so on (`NA` as the final element connotes to auto-detect the final number of units based on the observed number of outcomes). `activation` is also passed to `layer_dense()` and may take values such as `softmax`, `relu`, `elu`, and `linear`. (`kms` also has a separate parameter to control the optimizer; by default `kms(... optimizer = 'rms_prop')`.) The `dropout` that follows each dense layer rate prevents overfitting (but of course isn't applicable to the final layer).
 
@@ -173,9 +167,9 @@ colMeans(accuracy)
 ```
 
     Nbatch_16 Nbatch_32 Nbatch_64 
-    0.3987599 0.5745734 0.5011924 
+    0.4960650 0.4101237 0.5561078 
 
-For the sake of curtailing runtime, the number of epochs has been set arbitrarily short but, from those results, 32 is the best batch size.
+For the sake of curtailing runtime, the number of epochs has been set arbitrarily short but, from those results, 64 is the best batch size.
 
 Inputting a Compiled Keras Model
 ================================
@@ -183,14 +177,13 @@ Inputting a Compiled Keras Model
 This section shows how to input a model compiled in the fashion typical to `library(keras)`, which is useful for more advanced models. Here is an example for `lstm` analogous to the [imbd wih Keras for example](https://tensorflow.rstudio.com/keras/articles/examples/imdb_lstm.html).
 
 ``` r
-# not run
 k <- keras_model_sequential()
 k %>%
   layer_embedding(input_dim = popularity$P, output_dim = popularity$P) %>% 
   layer_lstm(units = 512, dropout = 0.4, recurrent_dropout = 0.2) %>% 
   layer_dense(units = 256, activation = "relu") %>%
   layer_dropout(0.3) %>%
-  layer_dense(units = 8, # length(breaks) - 1 if all levels observed  
+  layer_dense(units = 8, # number of levels observed on y (outcome)  
               activation = 'sigmoid')
 
 k %>% compile(

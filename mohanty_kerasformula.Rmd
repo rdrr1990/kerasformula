@@ -42,8 +42,7 @@ And let's suppose we are interested in putting tweets into categories based on p
 ```{r, echo = FALSE}
 library(reshape2)
 rstats %>% select(favorite_count, retweet_count) %>% melt %>%
-ggplot(aes(log10(value + 1), fill=variable)) + geom_density(alpha=0.5) + ggtitle("#rstats tweets")
-
+ggplot(aes(log10(value + 1), fill=variable)) + geom_density(alpha=0.5) + ggtitle("#rstats tweets")  + theme_minimal()
 ```
 
 Some of the data, like `rstats$mentions_screen_name` comes in a list of varying lengths, so let's write a helper function to count non-NA entries.  
@@ -70,7 +69,7 @@ popularity <- kms("cut(retweet_count + favorite_count, breaks) ~
                           format(rstats$created_at, '%H')", rstats)
 plot(popularity$history) + ggtitle(paste("#rstat popularity:",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
-                                         "out-of-sample accuracy"))
+                                         "out-of-sample accuracy")) + theme_minimal()
 popularity$confusion
 ```
 The model only classifies about `r round(100*popularity$evaluations$acc, 0)`% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot suggests that out of sample accuracy is not very stable. We can easily change the breakpoints and number of epochs. 
@@ -86,7 +85,7 @@ popularity <- kms("cut(retweet_count + favorite_count, breaks) ~
                           format(rstats$created_at, '%H')", rstats, Nepochs = 10)
 plot(popularity$history) + ggtitle(paste("#rstat popularity (new breakpoints):",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
-                                         "out-of-sample accuracy"))
+                                         "out-of-sample accuracy")) + theme_minimal()
 ```
 
 Suppose we want to add a little more data. Let's first store the input formula.
@@ -113,9 +112,11 @@ for(i in mentions)
   pop_input <- paste0(pop_input, " + ", "grepl(", i, ", mentions_user_id)")
 
 popularity <- kms(pop_input, rstats, Nepochs = 10)
+```
+```{r mentionsplot, echo=FALSE}
 plot(popularity$history) + ggtitle(paste("#rstat popularity (with 'mentions'):",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
-                                         "out-of-sample accuracy"))
+                                         "out-of-sample accuracy"))  + theme_minimal()
 ```
 
 We could add more data, perhaps add individual words from the text or some other summary stat (`mean(text %in% LETTERS)` to see if all caps explains popularity). But let's alter the neural net.
@@ -130,9 +131,12 @@ popularity <- kms(pop_input, rstats,
                   layers = list(units = c(1024, 512, 256, 128, NA),
                                 activation = c("relu", "relu", "relu", "relu", "softmax"), 
                                 dropout = c(0.5, 0.45, 0.4, 0.35, NA)))
+```
+
+```{r customplot, echo=FALSE}
 plot(popularity$history) + ggtitle(paste("#rstat popularity (custom dense neural net):",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
-                                         "out-of-sample accuracy"))
+                                         "out-of-sample accuracy")) + theme_minimal()
 ```
 
 `kms` builds a `keras_sequential_model()`, which is a stack of linear layers. The input shape is determined by the dimensionality of the model matrix (`popularity$P`) but after that users are free to determine the number of layers and so on. The `kms` argument `layers` expects a list, the first entry of which is a vector `units` with which to call `keras::layer_dense()`. The first element the number of `units` in the first layer, the second element for the second layer, and so on (`NA` as the final element connotes to auto-detect the final number of units based on the observed number of outcomes). `activation` is also passed to `layer_dense()` and may take values such as `softmax`, `relu`, `elu`, and `linear`. (`kms` also has a separate parameter to control the optimizer; by default `kms(... optimizer = 'rms_prop')`.) The `dropout` that follows each dense layer rate prevents overfitting (but of course isn't applicable to the final layer).
@@ -164,14 +168,13 @@ For the sake of curtailing runtime, the number of epochs has been set arbitraril
 This section shows how to input a model compiled in the fashion typical to `library(keras)`, which is useful for more advanced models. Here is an example for `lstm` analogous to the [imbd wih Keras for example](https://tensorflow.rstudio.com/keras/articles/examples/imdb_lstm.html). 
 
 ```{r lstm_ex, eval=FALSE}
-# not run
 k <- keras_model_sequential()
 k %>%
   layer_embedding(input_dim = popularity$P, output_dim = popularity$P) %>% 
   layer_lstm(units = 512, dropout = 0.4, recurrent_dropout = 0.2) %>% 
   layer_dense(units = 256, activation = "relu") %>%
   layer_dropout(0.3) %>%
-  layer_dense(units = 8, # length(breaks) - 1 if all levels observed  
+  layer_dense(units = 8, # number of levels observed on y (outcome)  
               activation = 'sigmoid')
 
 k %>% compile(
