@@ -37,7 +37,7 @@ cor(rstats$favorite_count, rstats$retweet_count, method="spearman")
 
 Since few tweeets go viral, the data are quite skewed towards zero.
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/densities-1.png)
+![](./mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/densities-1.png)
 
 Getting the Most out of Formulas
 ================================
@@ -68,7 +68,7 @@ plot(popularity$history) + ggtitle(paste("#rstat popularity:",
                                          "out-of-sample accuracy")) + theme_minimal()
 ```
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/first_model-1.png)
+![](./mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/first_model-1.png)
 
 ``` r
 popularity$confusion
@@ -99,7 +99,7 @@ plot(popularity$history) + ggtitle(paste("#rstat popularity (new breakpoints):",
                                          "out-of-sample accuracy")) + theme_minimal()
 ```
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/change_breaks-1.png)
+![](./mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/change_breaks-1.png)
 
 Suppose we want to add a little more data. Let's first store the input formula.
 
@@ -128,7 +128,7 @@ for(i in mentions)
 popularity <- kms(pop_input, rstats)
 ```
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/mentionsplot-1.png)
+![](./mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/mentionsplot-1.png)
 
 Customizing Layers with kms()
 =============================
@@ -152,7 +152,7 @@ popularity <- kms(pop_input, rstats,
                                 dropout = c(0.5, 0.45, 0.4, 0.35, NA)))
 ```
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/customplot-1.png)
+![](./mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/customplot-1.png)
 
 `kms` builds a `keras_sequential_model()`, which is a stack of linear layers. The input shape is determined by the dimensionality of the model matrix (`popularity$P`) but after that users are free to determine the number of layers and so on. The `kms` argument `layers` expects a list, the first entry of which is a vector `units` with which to call `keras::layer_dense()`. The first element the number of `units` in the first layer, the second element for the second layer, and so on (`NA` as the final element connotes to auto-detect the final number of units based on the observed number of outcomes). `activation` is also passed to `layer_dense()` and may take values such as `softmax`, `relu`, `elu`, and `linear`. (`kms` also has a separate parameter to control the optimizer; by default `kms(... optimizer = 'rms_prop')`.) The `dropout` that follows each dense layer rate prevents overfitting (but of course isn't applicable to the final layer).
 
