@@ -22,10 +22,12 @@ To get going, make sure that `keras` and `retweet` configured.
 install.packages("kerasformula", "rtweet")
 library(kerasformula)
 install_keras()                        # first time only. see ?install_keras() for install options
+                                       # like install_keras(tensorflow = "gpu")
+
 library(rtweet)                        # see https://github.com/mkearney/rtweet
 ```
 
-Let's look at #rstats tweets (excluding retweets) as of `r format(Sys.time(), "%B %d, %Y")` at `r format(Sys.time(), "%H:%M")`. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
+Let's look at #rstats tweets (excluding retweets) for a six-day period ending `r format(Sys.time(), "%B %d, %Y")` at `r format(Sys.time(), "%H:%M")`. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
 
 ```{r download}
 library(rtweet)
@@ -103,12 +105,12 @@ pop_input <- "cut(retweet_count + favorite_count, breaks) ~
 ```
 Here we use `paste0` to add to the formula by looping over user IDs adding something like:
 ```
-grepl(12233344455556, mentions_user_id)
+grepl("12233344455556", mentions_user_id)
 ```
 
 ```{r add_mentions}
 mentions <- unlist(rstats$mentions_user_id)
-mentions <- unique(mentions[which(table(mentions) > 4)]) # remove infrequent mentions
+mentions <- unique(mentions[which(table(mentions) > 5)]) # remove infrequent mentions
 mentions <- mentions[-1] # drop NA
 
 for(i in mentions)

@@ -17,7 +17,7 @@ install_keras()                        # first time only. see ?install_keras() f
 library(rtweet)                        # see https://github.com/mkearney/rtweet
 ```
 
-Let's look at \#rstats tweets (excluding retweets) for a six-day period ending January 16, 2018 at 16:47. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
+Let's look at \#rstats tweets (excluding retweets) for a six-day period ending January 17, 2018 at 14:03. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
 
 ``` r
 library(rtweet)
@@ -25,7 +25,7 @@ rstats <- search_tweets("#rstats", n = 10000, include_rts = FALSE)
 dim(rstats)
 ```
 
-    [1] 2520   42
+    [1] 2771   42
 
 Suppose our goal is to predict how popular tweets will be based on how often the tweet was retweeted and favorited (which correlate strongly).
 
@@ -33,7 +33,7 @@ Suppose our goal is to predict how popular tweets will be based on how often the
 cor(rstats$favorite_count, rstats$retweet_count, method="spearman")
 ```
 
-    [1] 0.7155409
+    [1] 0.71568
 
 Since few tweeets go viral, the data are quite skewed towards zero.
 
@@ -76,14 +76,14 @@ popularity$confusion
 
                    
                     (-1,0] (0,1] (1,10] (10,100] (100,1e+03] (1e+03,1e+04]
-      (-1,0]             8    20     19        0           0             0
-      (0,1]              5    31     71        0           0             0
-      (1,10]             3    10    174       13           0             0
-      (10,100]           0     0     54       49           0             0
-      (100,1e+03]        0     0      4        6           0             0
+      (-1,0]            30    11     30        0           0             0
+      (0,1]             15    19     90        1           0             0
+      (1,10]             6     8    206        8           0             0
+      (10,100]           0     1     71       45           0             0
+      (100,1e+03]        0     0      3        8           0             0
       (1e+03,1e+04]      0     0      0        0           0             0
 
-The model only classifies about 56% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot also suggests that out-of-sample accuracy is not very stable. We can easily change the breakpoints and number of epochs.
+The model only classifies about 54% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot also suggests that out-of-sample accuracy is not very stable. We can easily change the breakpoints and number of epochs.
 
 ``` r
 breaks <- c(-1, 0, 1, 25, 50, 75, 100, 500, 1000, 10000)
@@ -119,7 +119,7 @@ Here we use `paste0` to add to the formula by looping over user IDs adding somet
 
 ``` r
 mentions <- unlist(rstats$mentions_user_id)
-mentions <- unique(mentions[which(table(mentions) > 4)]) # remove infrequent mentions
+mentions <- unique(mentions[which(table(mentions) > 5)]) # remove infrequent mentions
 mentions <- mentions[-1] # drop NA
 
 for(i in mentions)
@@ -141,7 +141,7 @@ The `input.formula` is used to create a sparse model matrix. For example, `rstat
 popularity$P
 ```
 
-    [1] 1148
+    [1] 1201
 
 Say we wanted to reshape the layers to transition more gradually from the input shape to the output.
 
@@ -178,9 +178,9 @@ colMeans(accuracy)
 ```
 
     Nbatch_16 Nbatch_32 Nbatch_64 
-    0.3172499 0.5711682 0.4199070 
+    0.4883286 0.4711909 0.3529203 
 
-For the sake of curtailing runtime, the number of epochs has been set arbitrarily short but, from those results, 32 is the best batch size.
+For the sake of curtailing runtime, the number of epochs has been set arbitrarily short but, from those results, 16 is the best batch size.
 
 Inputting a Compiled Keras Model
 ================================
