@@ -12,6 +12,8 @@ To get going, make sure that `keras` and `retweet` configured.
 install.packages("kerasformula", "rtweet")
 library(kerasformula)
 install_keras()                        # first time only. see ?install_keras() for install options
+                                       # like install_keras(tensorflow = "gpu")
+
 library(rtweet)                        # see https://github.com/mkearney/rtweet
 ```
 
