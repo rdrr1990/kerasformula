@@ -4,9 +4,9 @@ author: "Pete Mohanty"
 output: github_document
 ---
 
-This document introduces `kms`, the main function of `library(kerasformula)`. Newly on `CRAN`, `kerasformula` offers a high-level interface for `keras`. Many classic machine learning  tutorials assume that data come in a relatively homogenous form (e.g., pixels for digit recognition or counts or ranks words) which can make coding somewhat cumbersome when data come in a heterogenous data frame. `kms` takes advantage of the flexibility of R formulas to smooth this process. 
+This document introduces `kms`, the main function of `library(kerasformula)`. Newly on `CRAN`, `kerasformula` offers a high-level interface for `library(keras)`. Many classic machine learning  tutorials assume that data come in a relatively homogenous form (e.g., pixels for digit recognition or word counts or ranks) which can make coding somewhat cumbersome when data come in a heterogenous data frame. `kms` takes advantage of the flexibility of R formulas to smooth this process. 
 
-`kms` builds dense neural nets and, after fitting them, returns a single object with predictions, measures of fit, and details about the function call. `kms` accepts a number of parameters including the loss and activation functions found in `library(keras)`. `kms` also accepts compiled `keras_model_sequential` objects allowing for even further customization. This little demo shows how `kms` can aid is model building and hyperparameter selection (e.g., batch size) starting with raw data from `rtweet` by @kearneymw.
+`kms` builds dense neural nets and, after fitting them, returns a single object with predictions, measures of fit, and details about the function call. `kms` accepts a number of parameters including the loss and activation functions found in `keras`. `kms` also accepts compiled `keras_model_sequential` objects allowing for even further customization. This little demo shows how `kms` can aid is model building and hyperparameter selection (e.g., batch size) starting with raw data gathered using `library(rtweet)`.
 
 ```{r libraries, echo=FALSE, message=FALSE, warning=FALSE}
 library(knitr)
@@ -14,7 +14,8 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 library(kerasformula)
 library(rtweet)
 library(ggplot2)
-library(dplyr)
+library(dplyr)                 # for %>%, select()
+library(reshape2)              # for melt()
 ```
 To get going, make sure that `keras` and `retweet` configured.
 ```{r libraries_display, eval = FALSE}
@@ -29,23 +30,25 @@ Let's look at #rstats tweets (excluding retweets) as of `r format(Sys.time(), "%
 ```{r download}
 library(rtweet)
 rstats <- search_tweets("#rstats", n = 10000, include_rts = FALSE)
+dim(rstats)
 ```
 
 Suppose our goal is to predict how popular tweets will be based on how often the tweet was retweeted and favorited (which correlate strongly).
 
-```{r}
+```{r correlation}
 cor(rstats$favorite_count, rstats$retweet_count, method="spearman")
 ```
 
-And let's suppose we are interested in putting tweets into categories based on popularity but we're not sure how finely-grained we want to make distinctions (a practical problem that turns out to have big implications for predictive accuracy). Since few tweeets go viral, the data are quite skewed towards zero. 
+Since few tweeets go viral, the data are quite skewed towards zero. 
 
-```{r, echo = FALSE}
-library(reshape2)
+```{r densities, echo = FALSE}
 rstats %>% select(favorite_count, retweet_count) %>% melt %>%
 ggplot(aes(log10(value + 1), fill=variable)) + geom_density(alpha=0.5) + ggtitle("#rstats tweets")  + theme_minimal()
 ```
 
-Some of the data, like `rstats$mentions_screen_name` comes in a list of varying lengths, so let's write a helper function to count non-NA entries.  
+# Getting the Most out of Formulas
+
+Let's suppose we are interested in putting tweets into categories based on popularity but we're not sure how finely-grained we want to make distinctions. Some of the data, like `rstats$mentions_screen_name` comes in a list of varying lengths, so let's write a helper function to count non-NA entries.  
 
 ```{r helper}
 n <- function(x){
@@ -60,19 +63,18 @@ Let's start with a dense neural net, the default of `kms`. We can use base R fun
 
 ```{r first_model}
 breaks <- c(-1, 0, 1, 10, 100, 1000, 10000)
-popularity <- kms("cut(retweet_count + favorite_count, breaks) ~  
-                          n(hashtags) + n(mentions_screen_name) + n(urls_url) +
-                          nchar(text) +
-                          screen_name + source +
+popularity <- kms("cut(retweet_count + favorite_count, breaks) ~ screen_name + source +  
+                          n(hashtags) + n(mentions_screen_name) + 
+                          n(urls_url) + nchar(text) +
                           grepl('photo', media_type) +
-                          weekdays(rstats$created_at) + 
-                          format(rstats$created_at, '%H')", rstats)
+                          weekdays(created_at) + 
+                          format(created_at, '%H')", rstats)
 plot(popularity$history) + ggtitle(paste("#rstat popularity:",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
                                          "out-of-sample accuracy")) + theme_minimal()
 popularity$confusion
 ```
-The model only classifies about `r round(100*popularity$evaluations$acc, 0)`% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot suggests that out of sample accuracy is not very stable. We can easily change the breakpoints and number of epochs. 
+The model only classifies about `r round(100*popularity$evaluations$acc, 0)`% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot also suggests that out-of-sample accuracy is not very stable. We can easily change the breakpoints and number of epochs. 
 
 ```{r change_breaks}
 breaks <- c(-1, 0, 1, 25, 50, 75, 100, 500, 1000, 10000)
@@ -81,8 +83,8 @@ popularity <- kms("cut(retweet_count + favorite_count, breaks) ~
                           nchar(text) +
                           screen_name + source +
                           grepl('photo', media_type) +
-                          weekdays(rstats$created_at) + 
-                          format(rstats$created_at, '%H')", rstats, Nepochs = 10)
+                          weekdays(created_at) + 
+                          format(created_at, '%H')", rstats, Nepochs = 10)
 plot(popularity$history) + ggtitle(paste("#rstat popularity (new breakpoints):",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
                                          "out-of-sample accuracy")) + theme_minimal()
@@ -96,8 +98,8 @@ pop_input <- "cut(retweet_count + favorite_count, breaks) ~
                           nchar(text) +
                           screen_name + source +
                           grepl('photo', media_type) +
-                          weekdays(rstats$created_at) + 
-                          format(rstats$created_at, '%H')"
+                          weekdays(created_at) + 
+                          format(created_at, '%H')"
 ```
 Here we use `paste0` to add to the formula by looping over user IDs adding something like:
 ```
@@ -105,19 +107,24 @@ grepl(12233344455556, mentions_user_id)
 ```
 
 ```{r add_mentions}
-mentions <- unique(unlist(rstats$mentions_user_id))
+mentions <- unlist(rstats$mentions_user_id)
+mentions <- unique(mentions[which(table(mentions) > 4)]) # remove infrequent mentions
 mentions <- mentions[-1] # drop NA
 
 for(i in mentions)
   pop_input <- paste0(pop_input, " + ", "grepl(", i, ", mentions_user_id)")
 
-popularity <- kms(pop_input, rstats, Nepochs = 10)
+popularity <- kms(pop_input, rstats)
 ```
+
 ```{r mentionsplot, echo=FALSE}
+
 plot(popularity$history) + ggtitle(paste("#rstat popularity (with 'mentions'):",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
                                          "out-of-sample accuracy"))  + theme_minimal()
 ```
+
+# Customizing Layers with kms()
 
 We could add more data, perhaps add individual words from the text or some other summary stat (`mean(text %in% LETTERS)` to see if all caps explains popularity). But let's alter the neural net.
 

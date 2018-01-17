@@ -2,9 +2,9 @@ Analyzing rtweet data with kerasformula
 ================
 Pete Mohanty
 
-This document introduces `kms`, the main function of `library(kerasformula)`. Newly on `CRAN`, `kerasformula` offers a high-level interface for `keras`. Many classic machine learning tutorials assume that data come in a relatively homogenous form (e.g., pixels for digit recognition or counts or ranks words) which can make coding somewhat cumbersome when data come in a heterogenous data frame. `kms` takes advantage of the flexibility of R formulas to smooth this process.
+This document introduces `kms`, the main function of `library(kerasformula)`. Newly on `CRAN`, `kerasformula` offers a high-level interface for `library(keras)`. Many classic machine learning tutorials assume that data come in a relatively homogenous form (e.g., pixels for digit recognition or word counts or ranks) which can make coding somewhat cumbersome when data come in a heterogenous data frame. `kms` takes advantage of the flexibility of R formulas to smooth this process.
 
-`kms` builds dense neural nets and, after fitting them, returns a single object with predictions, measures of fit, and details about the function call. `kms` accepts a number of parameters including the loss and activation functions found in `library(keras)`. `kms` also accepts compiled `keras_model_sequential` objects allowing for even further customization. This little demo shows how `kms` can aid is model building and hyperparameter selection (e.g., batch size) starting with raw data from `rtweet` by @kearneymw.
+`kms` builds dense neural nets and, after fitting them, returns a single object with predictions, measures of fit, and details about the function call. `kms` accepts a number of parameters including the loss and activation functions found in `keras`. `kms` also accepts compiled `keras_model_sequential` objects allowing for even further customization. This little demo shows how `kms` can aid is model building and hyperparameter selection (e.g., batch size) starting with raw data gathered using `library(rtweet)`.
 
 To get going, make sure that `keras` and `retweet` configured.
 
@@ -15,12 +15,15 @@ install_keras()                        # first time only. see ?install_keras() f
 library(rtweet)                        # see https://github.com/mkearney/rtweet
 ```
 
-Let's look at \#rstats tweets (excluding retweets) as of January 15, 2018 at 16:15. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
+Let's look at \#rstats tweets (excluding retweets) as of January 16, 2018 at 16:47. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
 
 ``` r
 library(rtweet)
 rstats <- search_tweets("#rstats", n = 10000, include_rts = FALSE)
+dim(rstats)
 ```
+
+    [1] 2520   42
 
 Suppose our goal is to predict how popular tweets will be based on how often the tweet was retweeted and favorited (which correlate strongly).
 
@@ -28,13 +31,16 @@ Suppose our goal is to predict how popular tweets will be based on how often the
 cor(rstats$favorite_count, rstats$retweet_count, method="spearman")
 ```
 
-    [1] 0.7108667
+    [1] 0.7155409
 
-And let's suppose we are interested in putting tweets into categories based on popularity but we're not sure how finely-grained we want to make distinctions (a practical problem that turns out to have big implications for predictive accuracy). Since few tweeets go viral, the data are quite skewed towards zero.
+Since few tweeets go viral, the data are quite skewed towards zero.
 
-![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-2-1.png)
+![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/densities-1.png)
 
-Some of the data, like `rstats$mentions_screen_name` comes in a list of varying lengths, so let's write a helper function to count non-NA entries.
+Getting the Most out of Formulas
+================================
+
+Let's suppose we are interested in putting tweets into categories based on popularity but we're not sure how finely-grained we want to make distinctions. Some of the data, like `rstats$mentions_screen_name` comes in a list of varying lengths, so let's write a helper function to count non-NA entries.
 
 ``` r
 n <- function(x){
@@ -49,13 +55,12 @@ Let's start with a dense neural net, the default of `kms`. We can use base R fun
 
 ``` r
 breaks <- c(-1, 0, 1, 10, 100, 1000, 10000)
-popularity <- kms("cut(retweet_count + favorite_count, breaks) ~  
-                          n(hashtags) + n(mentions_screen_name) + n(urls_url) +
-                          nchar(text) +
-                          screen_name + source +
+popularity <- kms("cut(retweet_count + favorite_count, breaks) ~ screen_name + source +  
+                          n(hashtags) + n(mentions_screen_name) + 
+                          n(urls_url) + nchar(text) +
                           grepl('photo', media_type) +
-                          weekdays(rstats$created_at) + 
-                          format(rstats$created_at, '%H')", rstats)
+                          weekdays(created_at) + 
+                          format(created_at, '%H')", rstats)
 plot(popularity$history) + ggtitle(paste("#rstat popularity:",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
                                          "out-of-sample accuracy")) + theme_minimal()
@@ -69,14 +74,14 @@ popularity$confusion
 
                    
                     (-1,0] (0,1] (1,10] (10,100] (100,1e+03] (1e+03,1e+04]
-      (-1,0]            36     1      1        0           0             0
-      (0,1]             77    19     18        2           0             0
-      (1,10]           154    13     38        9           0             0
-      (10,100]          54     4      7       44           0             0
-      (100,1e+03]        5     0      0        8           0             0
+      (-1,0]             8    20     19        0           0             0
+      (0,1]              5    31     71        0           0             0
+      (1,10]             3    10    174       13           0             0
+      (10,100]           0     0     54       49           0             0
+      (100,1e+03]        0     0      4        6           0             0
       (1e+03,1e+04]      0     0      0        0           0             0
 
-The model only classifies about 28% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot suggests that out of sample accuracy is not very stable. We can easily change the breakpoints and number of epochs.
+The model only classifies about 56% of the out-of-sample data correctly. The confusion matrix suggests that model does best with tweets that aren't retweeted but struggles with others. The `history` plot also suggests that out-of-sample accuracy is not very stable. We can easily change the breakpoints and number of epochs.
 
 ``` r
 breaks <- c(-1, 0, 1, 25, 50, 75, 100, 500, 1000, 10000)
@@ -85,8 +90,8 @@ popularity <- kms("cut(retweet_count + favorite_count, breaks) ~
                           nchar(text) +
                           screen_name + source +
                           grepl('photo', media_type) +
-                          weekdays(rstats$created_at) + 
-                          format(rstats$created_at, '%H')", rstats, Nepochs = 10)
+                          weekdays(created_at) + 
+                          format(created_at, '%H')", rstats, Nepochs = 10)
 plot(popularity$history) + ggtitle(paste("#rstat popularity (new breakpoints):",
                                          paste0(round(100*popularity$evaluations$acc, 1), "%"),
                                          "out-of-sample accuracy")) + theme_minimal()
@@ -102,8 +107,8 @@ pop_input <- "cut(retweet_count + favorite_count, breaks) ~
                           nchar(text) +
                           screen_name + source +
                           grepl('photo', media_type) +
-                          weekdays(rstats$created_at) + 
-                          format(rstats$created_at, '%H')"
+                          weekdays(created_at) + 
+                          format(created_at, '%H')"
 ```
 
 Here we use `paste0` to add to the formula by looping over user IDs adding something like:
@@ -111,16 +116,20 @@ Here we use `paste0` to add to the formula by looping over user IDs adding somet
     grepl(12233344455556, mentions_user_id)
 
 ``` r
-mentions <- unique(unlist(rstats$mentions_user_id))
+mentions <- unlist(rstats$mentions_user_id)
+mentions <- unique(mentions[which(table(mentions) > 4)]) # remove infrequent mentions
 mentions <- mentions[-1] # drop NA
 
 for(i in mentions)
   pop_input <- paste0(pop_input, " + ", "grepl(", i, ", mentions_user_id)")
 
-popularity <- kms(pop_input, rstats, Nepochs = 10)
+popularity <- kms(pop_input, rstats)
 ```
 
 ![](mohanty_kerasformula_files/figure-markdown_github-ascii_identifiers/mentionsplot-1.png)
+
+Customizing Layers with kms()
+=============================
 
 We could add more data, perhaps add individual words from the text or some other summary stat (`mean(text %in% LETTERS)` to see if all caps explains popularity). But let's alter the neural net.
 
@@ -130,7 +139,7 @@ The `input.formula` is used to create a sparse model matrix. For example, `rstat
 popularity$P
 ```
 
-    [1] 1786
+    [1] 1148
 
 Say we wanted to reshape the layers to transition more gradually from the input shape to the output.
 
@@ -167,9 +176,9 @@ colMeans(accuracy)
 ```
 
     Nbatch_16 Nbatch_32 Nbatch_64 
-    0.4960650 0.4101237 0.5561078 
+    0.3172499 0.5711682 0.4199070 
 
-For the sake of curtailing runtime, the number of epochs has been set arbitrarily short but, from those results, 64 is the best batch size.
+For the sake of curtailing runtime, the number of epochs has been set arbitrarily short but, from those results, 32 is the best batch size.
 
 Inputting a Compiled Keras Model
 ================================
