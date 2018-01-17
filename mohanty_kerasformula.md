@@ -15,7 +15,7 @@ install_keras()                        # first time only. see ?install_keras() f
 library(rtweet)                        # see https://github.com/mkearney/rtweet
 ```
 
-Let's look at \#rstats tweets (excluding retweets) as of January 16, 2018 at 16:47. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
+Let's look at \#rstats tweets (excluding retweets) for a six-day period ending January 16, 2018 at 16:47. This happens to give us a nice reasonable number of observations to work with in terms of runtime (and the purpose of this document is to show syntax, not build particularly predictive models).
 
 ``` r
 library(rtweet)
@@ -113,7 +113,7 @@ pop_input <- "cut(retweet_count + favorite_count, breaks) ~
 
 Here we use `paste0` to add to the formula by looping over user IDs adding something like:
 
-    grepl(12233344455556, mentions_user_id)
+    grepl("12233344455556", mentions_user_id)
 
 ``` r
 mentions <- unlist(rstats$mentions_user_id)
