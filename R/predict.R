@@ -17,7 +17,7 @@
 #'  forecast$confusion
 #'  
 #' }else{
-#'    cat("Please run install_keras() before using kms(). ?install_keras for options like setting up gpu." )
+#'    cat("Please run install_keras() before using kms(). ?install_keras for options like gpu.")
 #' }
 #' @author Pete Mohanty
 #' @importFrom Matrix Matrix
