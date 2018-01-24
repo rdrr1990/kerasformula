@@ -1,7 +1,7 @@
 Package: kerasformula
 Type: Package
 Title: A High-Level R Interface for Neural Nets
-Version: 0.1.0
+Version: 0.1.1
 Author: Pete Mohanty [aut, cre]
 Authors@R: person("Pete", "Mohanty", role = c("aut", "cre"), email = "pete.mohanty@gmail.com")
 Maintainer: Pete Mohanty <pete.mohanty@gmail.com>

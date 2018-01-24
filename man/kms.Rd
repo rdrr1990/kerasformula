@@ -8,7 +8,7 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
   c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4,
   0.3, NA)), pTraining = 0.8, seed = NULL, validation_split = 0.2,
   Nepochs = 25, batch_size = 32, loss = NULL, metrics = c("accuracy"),
-  optimizer = "optimizer_rmsprop", ...)
+  optimizer = "optimizer_rmsprop", verbose = 0, ...)
 }
 \arguments{
 \item{input_formula}{an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. The outcome, y, is assumed to be categorical, e.g. "stars ~ mentions.tasty + mentions.fun".}
@@ -19,7 +19,7 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 
 \item{layers}{a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. Example with three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. See ?layer_dense or ?layer_dropout.}
 
-\item{pTraining}{Proportion of the data to be used for training the model;  0 < pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., for confusion matrix).}
+\item{pTraining}{Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).}
 
 \item{seed}{seed to passed to set.seed for partitioning data. If NULL (default), automatically generated.}
 
@@ -27,13 +27,15 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 
 \item{Nepochs}{Number of epochs. To be passed to keras::fit. Default == 25.}
 
-\item{batch_size}{To be passed to keras::fit. Default == 32.}
+\item{batch_size}{To be passed to keras::fit and keras::predict_classes. Default == 32.}
 
 \item{loss}{To be passed to keras::compile. Defaults to "binary_crossentropy" or "categorical_crossentropy" based on the number of distinct elements of y.}
 
 \item{metrics}{To be passed to keras::compile. Default == c("accuracy").}
 
 \item{optimizer}{To be passed to keras::compile. Default == "optimizer_rmsprop".}
+
+\item{verbose}{0 ot 1, to be passed to keras functions. Default == 0.}
 
 \item{...}{Additional parameters to be passsed to Matrix::sparse.model.matrix.}
 }
@@ -42,6 +44,25 @@ kms_fit object. A list containing model, predictions, evaluations, as well as ot
 }
 \description{
 A regression-style function call for keras_model_sequential() which uses formulas and sparse matrices. A sequential model is a linear stack of layers.
+}
+\examples{
+if(is_keras_available()){
+
+ mtcars$make <- unlist(lapply(strsplit(rownames(mtcars), " "), function(tokens) tokens[1]))
+ company <- kms(make ~ ., mtcars, Nepochs = 10)
+ # out of sample accuracy
+ pCorrect <- mean(company$y_test == company$predictions)
+ pCorrect
+ company$confusion
+ # plot(history$company) # helps pick Nepochs
+ company <- kms(make ~ ., mtcars, Nepochs = 3, seed = 2018,
+               layers = list(units = c(11, 9, NA), activation = c("relu", "relu", "softmax"),
+               dropout = c(0.4, 0.3, NA)))
+ forecast <- predict(company, newdata = colMeans(mtcars[1:11,]))              
+}else{
+   cat("Please run install_keras() before using kms(). ?install_keras for options and details like setting up gpu." )
+}
+ 
 }
 \author{
 Pete Mohanty

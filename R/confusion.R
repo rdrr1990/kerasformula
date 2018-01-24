@@ -49,7 +49,7 @@ confusion <- function(object = NULL, y_test = NULL, predictions = NULL, return_x
       tab <- sort(table(obj$predictions[lab_i]), decreasing = TRUE)
       tab <- tab[-which(names(tab) == cf$label[i])]
       
-      if(cf$pCorrect[i] != 1){
+      if(cf$pCorrect[i] != 1 && length(tab) > 0){
         
         cf$MCE[i] <- names(tab)[1]
         cf$pMCE[i] <- tab[1]/Nlab_i
@@ -61,8 +61,7 @@ confusion <- function(object = NULL, y_test = NULL, predictions = NULL, return_x
           cf$pOther[i] <- 1 - (cf$pCorrect[i] + cf$pMCE[i] + cf$pMCE2[i])
           
         }
-        
-                
+    
       }
             
     }
