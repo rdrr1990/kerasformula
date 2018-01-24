@@ -58,9 +58,9 @@ if(is_keras_available()){
  company <- kms(make ~ ., mtcars, Nepochs = 3, seed = 2018,
                layers = list(units = c(11, 9, NA), activation = c("relu", "relu", "softmax"),
                dropout = c(0.4, 0.3, NA)))
- forecast <- predict(company, newdata = colMeans(mtcars[1:11,]))              
+ # ?predict.kms_fit to see how to predict on newdata
 }else{
-   cat("Please run install_keras() before using kms(). ?install_keras for options and details like setting up gpu." )
+   cat("Please run install_keras() before using kms(). ?install_keras for options like setting up gpu." )
 }
  
 }

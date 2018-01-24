@@ -3,6 +3,9 @@
 ^.*\.md$
 README.Rmd
 README_files/
+examples/
+mohanty_kerasformula_files/
 mohanty_kerasformula/
 mohanty_kerasformula.Rmd
 mohanty_kerasformula.md
+^\.httr-oauth$

@@ -17,9 +17,10 @@
 #'  forecast$confusion
 #'  
 #' }else{
-#'    cat("Please run install_keras() before using kms(). ?install_keras for options and details like setting up gpu." )
+#'    cat("Please run install_keras() before using kms(). ?install_keras for options like setting up gpu." )
 #' }
-
+#' @author Pete Mohanty
+#' @importFrom Matrix Matrix
 #' @method predict kms_fit
 #' @export
 predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
