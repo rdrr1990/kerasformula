@@ -55,7 +55,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   if(pTraining <= 0 || pTraining > 1) 
     stop("pTraining, the proportion of data used for training, must be between 0 and 1.")
   
-  form <- as.formula(input_formula)
+  form <- formula(input_formula, data = data)
   if(form[[1]] != "~" || length(form) != 3) 
     stop("Expecting formula of the form\n\ny ~ x1 + x2 + x3\n\nwhere y, x1, x2... are found in (the data.frame) data.")
   
