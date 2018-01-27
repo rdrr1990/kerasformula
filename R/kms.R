@@ -156,7 +156,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                  y_test = y[split == "test"], y_labels = labs, colnames_x = colnames_x,
                  seed = seed, split = split)
   
-  if(pTraining > 0){
+  if(pTraining < 1){
 
     evals <- keras_model_seq %>% evaluate(x_test, y_test)
     # 1 + to get back to R/Fortran land... 
