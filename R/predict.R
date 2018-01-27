@@ -34,7 +34,9 @@ predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
   if(!is_keras_available())
     stop("Please run install_keras() before using this predict method. ?install_keras for options and details (e.g. to use gpu).")
   
-  newdata_tmp <- sparse.model.matrix(object$input_formula, data = newdata, ...)
+  newdata <- as.data.frame(newdata)
+  
+  newdata_tmp <- sparse.model.matrix(object$input_formula, data = newdata, row.names = FALSE, ...)
   x_test <- Matrix(0, nrow = nrow(newdata), ncol = object$P, sparse = TRUE, ...)
   colnames(x_test) <- object$colnames_x
 
