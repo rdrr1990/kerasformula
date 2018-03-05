@@ -8,7 +8,7 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
   c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4,
   0.3, NA)), pTraining = 0.8, seed = NULL, validation_split = 0.2,
   Nepochs = 25, batch_size = 32, loss = NULL, metrics = c("accuracy"),
-  optimizer = "optimizer_rmsprop", verbose = 0, ...)
+  optimizer = "optimizer_rmsprop", x_scale = zero_one, verbose = 0, ...)
 }
 \arguments{
 \item{input_formula}{an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. The outcome, y, is assumed to be categorical, e.g. "stars ~ mentions.tasty + mentions.fun".}
@@ -34,6 +34,8 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 \item{metrics}{To be passed to keras::compile. Default == c("accuracy").}
 
 \item{optimizer}{To be passed to keras::compile. Default == "optimizer_rmsprop".}
+
+\item{x_scale}{Function to apply to scale each non-binary column. The default 'x_scale = zero_one' places each column of the model matrix on [0, 1]; 'x_scale = scale' standardizes; 'x_scale = NULL' leaves the data on its original scale.}
 
 \item{verbose}{0 ot 1, to be passed to keras functions. Default == 0.}
 

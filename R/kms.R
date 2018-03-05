@@ -14,6 +14,7 @@
 #' @param loss To be passed to keras::compile. Defaults to "binary_crossentropy" or "categorical_crossentropy" based on the number of distinct elements of y.
 #' @param metrics To be passed to keras::compile. Default == c("accuracy").
 #' @param optimizer To be passed to keras::compile. Default == "optimizer_rmsprop".
+#' @param x_scale Function to apply to scale each non-binary column. The default 'x_scale = zero_one' places each column of the model matrix on [0, 1]; 'x_scale = scale' standardizes; 'x_scale = NULL' leaves the data on its original scale.   
 #' @param verbose 0 ot 1, to be passed to keras functions. Default == 0. 
 #' @param ... Additional parameters to be passsed to Matrix::sparse.model.matrix.
 #' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training.
@@ -47,7 +48,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                                dropout = c(0.4, 0.3, NA)), 
                  pTraining = 0.8, seed = NULL, validation_split = 0.2, 
                  Nepochs = 25, batch_size = 32, loss = NULL, metrics = c("accuracy"),
-                 optimizer = "optimizer_rmsprop", verbose = 0, ...){
+                 optimizer = "optimizer_rmsprop", x_scale = zero_one, verbose = 0, ...){
   
   if(!is_keras_available())
     stop("Please run install_keras() before using kms(). ?install_keras for options and details like setting up gpu.")
@@ -65,6 +66,12 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   P <- ncol(x_tmp)
   N <- nrow(x_tmp)
   
+  if(!is.null(x_scale)){
+    for(i in which(apply(x_tmp, 2, n_distinct) > 2)){
+      x_tmp[,i] <- x_scale(x_tmp[,i])
+    }
+  }
+        
   if(pTraining > 0){
     
     if(is.null(seed)) 
@@ -103,15 +110,15 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     }else{
       y_train <- y_cat
     }
+    remove(y_cat)
   }else{
     if(pTraining > 0){
       y_train <- y[split == "train"]
       y_test <- y[split == "test"]
     }else{
-     y_train <- y_cat 
+     y_train <- y 
     }
   }
-  remove(y_cat)
   
   if(is.null(keras_model_seq)){
     
@@ -172,6 +179,13 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   
 }
 
+##
+## helper functions
+## 
 
+#' @export
+zero_one <- function(x){
+  (x - min(x, na.rm = TRUE))/(max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
+}
 
 
