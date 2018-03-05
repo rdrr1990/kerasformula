@@ -1,4 +1,4 @@
-R Notebook
+kerasformula on mlbench data
 ================
 
 Here is an example from `mlbench`. Thanks to Michael Gallagher for suggesting these data!
@@ -23,7 +23,7 @@ class_dense <- kms(Class ~ ., Sonar)
 class_dense$evaluations$acc
 ```
 
-    [1] 0.4375
+    [1] 0.5
 
 Here is another example using `lstm` (which is typically used on larger datasets). Note that `input_dimension` should be `P`, the number of columns in the model matrix (which was already constructed in the previous example).
 
@@ -53,4 +53,4 @@ class_lstm <- kms(Class ~ ., Sonar, k)
 class_lstm$evaluations$acc
 ```
 
-    [1] 0.5490196
+    [1] 0.5652174
