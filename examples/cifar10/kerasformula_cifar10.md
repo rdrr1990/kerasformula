@@ -72,7 +72,7 @@ The key to a good machine learning algorithm apparently lies in teaching the com
 Let's start by reading in all of the data.
 
 ``` r
-Nperfile <- 100 # 10,000 for full sample. otherwise N from each file.
+Nperfile <- 200 # 10,000 for full sample. otherwise N from each file.
 
 test_file <- file("cifar-10-batches-bin/test_batch.bin", "rb")
 raw_data <- readBin(test_file, integer(), n = 3073*Nperfile, size = 1, signed = FALSE)
@@ -82,7 +82,6 @@ X_test <- matrix(raw_data[-seq(1, length(raw_data), 3073)], nrow = Nperfile, byr
 
 y_train <- matrix(nrow = 5*Nperfile, ncol = 1)
 X_train <- matrix(nrow = 5*Nperfile, ncol = 3*1024)
-A_train <- array(dim = c(5*Nperfile, 32, 32, 3))
 
 for(i in 1:5){
   train_file <- file(dir("cifar-10-batches-bin/", pattern = "data_", full.names = TRUE)[i], "rb")
@@ -92,7 +91,7 @@ for(i in 1:5){
   X_train[1:Nperfile + (i - 1)*Nperfile, ] <- matrix(raw_data[-seq(1, length(raw_data), 3073)], 
                                        nrow = Nperfile, byrow=TRUE)
 }
-# remove(raw_data)
+remove(raw_data)
 ```
 
 A few spot checks...
@@ -103,15 +102,15 @@ table(y_test)       # if Nperfile = 10000, then should be 1,000 of each label
 
     y_test
      0  1  2  3  4  5  6  7  8  9 
-    10  6  8 10  7  8 16 11 13 11 
+    20 14 21 19 15 18 26 18 28 21 
 
 ``` r
 table(y_train)      # if Nperfile = 10000, then should be 5,000 of each label
 ```
 
     y_train
-     0  1  2  3  4  5  6  7  8  9 
-    37 58 51 50 53 50 53 54 41 53 
+      0   1   2   3   4   5   6   7   8   9 
+     83 114  94  99 109  98 101 104  94 104 
 
 ``` r
 range(X_train)       
@@ -132,7 +131,7 @@ In the full dataset, there are 5,000 of each type of image in the training data 
 ``` r
 training <- data.frame(lab = y_train, X = X_train) # rescale X to [0, 1]
 testing <- data.frame(lab = y_test, X = X_test)
-# rm(X_train, X_test)
+rm(X_train, X_test)
 ```
 
 `kms()` automatically splits the data into testing and training, however in this case the data are already split that way. Setting `kms(..., pTraining = 1)` and then calling `predict` on the outputted object along with the test data. `kms()` automatically puts data on a \[0, 1\] scale (but that can be altered, for example `kms(..., x_scale = scale)` standardizes). By default, `kms()` builds a dense model, meaning the simplest thing we can do is ...
@@ -149,6 +148,6 @@ forecast <- predict(fit, testing)
 forecast$accuracy
 ```
 
-    [1] 0.26
+    [1] 0.345
 
-That's pretty bad but the history suggests the model should run for more epochs (since the validated fit is still on an upward trajectory). That can be done by setting `kms(lab ~ ., training, pTraining = 1, Nepochs = 50)`. For a worked example showing options along these lines like loss and activation function and how to customize dense neural nets, see [here](https://tensorflow.rstudio.com/blog/analyzing-rtweet-data-with-kerasformula.html).
+That's pretty bad. The widening gap between the training and validation suggests overfitting is setting in and that fewer epochs would have done just as well. That can be done by setting `kms(lab ~ ., training, pTraining = 1, Nepochs = 10)`. For a worked example showing options along these lines like loss and activation function and how to customize dense neural nets, see [here](https://tensorflow.rstudio.com/blog/analyzing-rtweet-data-with-kerasformula.html).
