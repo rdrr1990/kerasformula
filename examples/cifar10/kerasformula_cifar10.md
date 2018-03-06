@@ -4,12 +4,12 @@ Pete Mohanty
 
 This document shows how to classify images using the [cifar10](https://www.cs.toronto.edu/~kriz/cifar.html) using `kms` from `library(kerasformula)`. Newly on `CRAN`, `kerasformula` offers a high-level interface for `library(keras)`.
 
-`kms` builds dense neural nets and, after fitting them, returns a single object with predictions, measures of fit, and details about the function call. `kms` accepts a number of parameters including the loss and activation functions found in `keras`. `kms` also accepts compiled `keras_model_sequential` objects allowing for even further customization. This little demo shows how `kms` can aid is model building and hyperparameter selection (e.g., batch size) starting with raw data gathered using `library(rtweet)`.
+`kms` builds dense neural nets and, after fitting them, returns a single object with predictions, measures of fit, and details about the function call. `kms` accepts a number of parameters including the loss and activation functions found in `keras`. `kms` also accepts compiled `keras_model_sequential` objects allowing for even further customization. 
 
 To get going, make sure that `keras` is configured.
 
 ``` r
-install.packages("kerasformula", "rtweet")
+install.packages("kerasformula")
 library(kerasformula)
 install_keras()                        # first time only. see ?install_keras() for install options
                                        # like install_keras(tensorflow = "gpu")
