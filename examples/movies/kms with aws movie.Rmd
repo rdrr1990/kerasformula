@@ -1,0 +1,60 @@
+---
+title: "kerasformula: classification with AWS movie data"
+author: Pete Mohanty
+output: github_document
+---
+
+```{r, echo=FALSE, warning=FALSE, comment=""}
+library(knitr)
+opts_chunk$set(message=FALSE, warning=FALSE, comment="")
+library(ggplot2)
+```
+
+
+## AWS Movie Data with kerasformula
+
+```{r}
+library(kerasformula)
+movies <- read.csv("http://s3.amazonaws.com/dcwoods2717/movies.csv")
+dplyr::glimpse(movies)
+```
+
+
+## Classifying Genre 
+
+```{r}
+sort(table(movies$genre))
+
+out <- kms(genre ~ . -director -title, movies, seed = 12345)
+
+plot(out$history) + labs(title = "Classifying Genre", 
+                         subtitle = "Source data: http://s3.amazonaws.com/dcwoods2717/movies.csv", y="") + theme_minimal()
+```
+
+
+The classifier does quite well for the top five categories but struggles with rarer ones. Does adding director help?
+
+```{r}
+out <- kms(genre ~ . -title, movies, seed = 12345)
+```
+```{r, echo=FALSE}
+plot(out$history) + labs(title = "Classifying Genre", 
+                         subtitle = "Source data: http://s3.amazonaws.com/dcwoods2717/movies.csv", y="") + theme_minimal()
+
+```
+
+Doesn't hurt much but introduces overfitting.... Including only the top directors doesn't make big improvements but doesn't have the overfitting issue.
+
+```{r}
+movies$top50_director <- as.character(movies$director)
+movies$top50_director[rank(movies$director) > 50] <- "other"
+out <- kms(genre ~ . -director -title, movies, seed = 12345)
+```
+
+
+```{r, echo=FALSE}
+plot(out$history) + labs(title = "Classifying Genre", 
+                         subtitle = "Source data: http://s3.amazonaws.com/dcwoods2717/movies.csv", y="") + theme_minimal()
+
+```
+
