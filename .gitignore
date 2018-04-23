@@ -6,5 +6,6 @@ README.Rmd
 build.R
 R/scratchwork*.R
 .httr-oauth
-.DS_Store
-*.Rcheck/
+.DS_Store 
+*.Rcheck/ 
+kerasformula.Rproj
