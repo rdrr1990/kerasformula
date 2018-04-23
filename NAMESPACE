@@ -3,7 +3,6 @@
 S3method(predict,kms_fit)
 export(confusion)
 export(kms)
-export(zero_one)
 importFrom(Matrix,Matrix)
 importFrom(Matrix,sparse.model.matrix)
 importFrom(dplyr,"%>%")

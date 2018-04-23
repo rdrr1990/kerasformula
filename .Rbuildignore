@@ -9,3 +9,4 @@ mohanty_kerasformula/
 mohanty_kerasformula.Rmd
 mohanty_kerasformula.md
 ^\.httr-oauth$
+R/scratchwork*.R
