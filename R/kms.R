@@ -133,11 +133,13 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       y_type <- if(n_distinct_y > 2) "multinomial" else "binary"
       
       if(is.null(loss)) 
-        loss <- if(n_distinct(y) == 2) "binary_crossentropy" else "categorical_crossentropy" 
+        loss <- if(n_distinct_y == 2) "binary_crossentropy" else "categorical_crossentropy" 
       
       if(is.null(metrics))
         metrics <- c("accuracy")
       
+      if(n_distinct_y > 7)
+        metrics <- c(metrics, "top_k_categorical_accuracy")
   }
 
   
