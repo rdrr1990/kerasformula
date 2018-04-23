@@ -76,6 +76,8 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     seed_list <- list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE)
     if(is.numeric(seed))
       seed_list$seed <- seed
+  }else{
+    seed_list <- seed
   } 
   if(is.null(seed_list$seed)){
       a <- as.numeric(format(Sys.time(), "%OS"))
