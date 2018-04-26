@@ -66,3 +66,4 @@ out <- kms(genre ~ . -director -title, movies, seed = 12345)
 ```
 
 ![](kms_with_aws_movie_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-7-1.png)
+For a more general introduction to that shows how to change loss, layer type and number, activation, etc. see package vignettes or this example using [Twitter data](https://tensorflow.rstudio.com/blog/analyzing-rtweet-data-with-kerasformula.html).  
