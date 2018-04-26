@@ -6,22 +6,22 @@
 \usage{
 kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
   c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4,
-  0.3, NA)), pTraining = 0.8, seed = NULL, validation_split = 0.2,
-  Nepochs = 25, batch_size = 32, loss = NULL, metrics = c("accuracy"),
-  optimizer = "optimizer_rmsprop", x_scale = zero_one, verbose = 0, ...)
+  0.3, NA)), pTraining = 0.8, validation_split = 0.2, Nepochs = 25,
+  batch_size = 32, loss = NULL, metrics = NULL,
+  optimizer = "optimizer_adam", scale_continuous = "zero_one",
+  drop_intercept = TRUE, seed = list(seed = NULL, disable_gpu = FALSE,
+  disable_parallel_cpu = FALSE), verbose = 0, ...)
 }
 \arguments{
-\item{input_formula}{an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. The outcome, y, is assumed to be categorical, e.g. "stars ~ mentions.tasty + mentions.fun".}
+\item{input_formula}{an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "stars ~ mentions.tasty + mentions.fun". kms treats numeric data a continuous outcome for which a regression-style model is fit. To do classification,}
 
 \item{data}{a data.frame.}
 
 \item{keras_model_seq}{A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: layers, loss, metrics, and optimizer.}
 
-\item{layers}{a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. Example with three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. See ?layer_dense or ?layer_dropout.}
+\item{layers}{a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear").}
 
 \item{pTraining}{Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).}
-
-\item{seed}{seed to passed to set.seed for partitioning data. If NULL (default), automatically generated.}
 
 \item{validation_split}{Portion of data to be used for validating each epoch (i.e., portion of pTraining). To be passed to keras::fit. Default == 0.2.}
 
@@ -29,13 +29,17 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 
 \item{batch_size}{To be passed to keras::fit and keras::predict_classes. Default == 32.}
 
-\item{loss}{To be passed to keras::compile. Defaults to "binary_crossentropy" or "categorical_crossentropy" based on the number of distinct elements of y.}
+\item{loss}{To be passed to keras::compile. Defaults to "binary_crossentropy", "categorical_crossentropy", or "mean_squared_error" based on input_formula and data.}
 
-\item{metrics}{To be passed to keras::compile. Default == c("accuracy").}
+\item{metrics}{Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to c("accuracy") for binary/categorical and "mean_absolute_error" for continuous.}
 
-\item{optimizer}{To be passed to keras::compile. Default == "optimizer_rmsprop".}
+\item{optimizer}{To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.}
 
-\item{x_scale}{Function to apply to scale each non-binary column. The default 'x_scale = zero_one' places each column of the model matrix on [0, 1]; 'x_scale = scale' standardizes; 'x_scale = NULL' leaves the data on its original scale.}
+\item{scale_continuous}{Function to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = zero_one' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.}
+
+\item{drop_intercept}{TRUE by default, may be required by X_dist or other implementation features.}
+
+\item{seed}{Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(). See also see https://stackoverflow.com/questions/42022950/.}
 
 \item{verbose}{0 ot 1, to be passed to keras functions. Default == 0.}
 

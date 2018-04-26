@@ -5,7 +5,7 @@
 \title{confusion}
 \usage{
 confusion(object = NULL, y_test = NULL, predictions = NULL,
-  return_xtab = NULL)
+  return_xtab = NULL, digits = 3)
 }
 \arguments{
 \item{object}{Optional fit object. confusion() assumes object contains holdout/vaidation data as `y_test` and the forecasts/classifications as `predictions` but alternative variable names can be specified with the input arguments by those names.}
@@ -15,6 +15,8 @@ confusion(object = NULL, y_test = NULL, predictions = NULL,
 \item{predictions}{A vector predictions or the name in object (if fit object provided but alternative variable name required).}
 
 \item{return_xtab}{Logical. If TRUE, returns confusion matrix, which is a crosstable with correct predictions on the diagonal (if all levels are predicted at least once). If FALSE, returns (rectangular) table with columns for percent correct, most common misclassification, second most common misclassification, and other predictions. Defaults to TRUE (crosstable-style) only if number of levels < 6.}
+
+\item{digits}{Number of digits for proportions when return_xtab=FALSE; if NULL, no rounding is performed.}
 }
 \value{
 confusion matrix or table as specified by return_xtab.

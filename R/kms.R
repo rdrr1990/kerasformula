@@ -122,7 +122,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
         loss <- "mean_squared_error"
       
       if(is.null(metrics))
-        metrics <- c("mean_absolute_error")
+        metrics <- c("mean_absolute_error", "mean_absolute_percentage_error")
       
   }else{
         
@@ -230,7 +230,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       layers$units[length(layers$units)] <- max(1, ncol(y_train))
     
     if(y_type == "continuous")
-      layers$activation <- c("relu", "softmax", "linear")
+      layers$activation <- c("softmax", "softmax", "linear")
     
     Nlayers <- length(layers$units)
     
