@@ -77,7 +77,8 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     if(is.numeric(seed))
       seed_list$seed <- seed
   }else{
-    seed_list <- seed
+    seed_list <- seed # allow user to pass in integer which controls software but not hardware parameters
+          # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
   } 
   if(is.null(seed_list$seed)){
       a <- as.numeric(format(Sys.time(), "%OS"))
@@ -92,7 +93,8 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   # calls set.seed() and Python equivalents...
   # seed intended to keep training / validation / test splits constant. 
   # additional parameters intended to remove simulation error
-  # and ensure exact results
+  # and ensure exact results...
+  # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
 
   if(pTraining > 0){
     
@@ -115,6 +117,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       
       if(verbose > 0) 
         message("y does not appear to be categorical; proceeding with regression. To instead do classification, stop and do something like\n\n out <- kms(as.factor(y) ~ x1 + x2, ...)" )
+      
       y_type <- "continuous"
       labs <- NULL
       
@@ -265,8 +268,9 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                  loss = loss, optimizer = optimizer, metrics = metrics,
                  N = N, P = P, K = n_distinct_y,
                  y_test = if(pTraining == 0) NULL else y[split == "test"],
+                 y_type = y_type,
                  # avoid y_test <- y_cat[split == "test", ]
-                 y_labels = labs, colnames_x = colnames_x,
+                 y_labels = labs, colnames_x = colnames_x, 
                  seed = seed, split = split, 
                  train_scale = train_scale)
 

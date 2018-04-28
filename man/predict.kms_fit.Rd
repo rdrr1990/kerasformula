@@ -10,19 +10,19 @@
 \arguments{
 \item{object}{output from kms()}
 
-\item{newdata}{new data. Performs merge so that x_test has the same columns as the object created by kms_fit using the user-provided input formula. y_test is also generated from that formula.}
+\item{newdata}{new data. Performs merge so that X_test has the same columns as the object created by kms_fit using the user-provided input formula. y_test is also generated from that formula.}
 
 \item{batch_size}{To be passed to keras::predict_classes. Default == 32.}
 
 \item{verbose}{0 ot 1, to be passed to keras::predict_classes. Default == 0.}
 
-\item{...}{additional parameters to build the sparse matrix x_test.}
+\item{...}{additional parameters to build the sparse matrix X_test.}
 }
 \value{
 list containing predictions, y_test, confusion matrix.
 }
 \description{
-predict function for kms_fit object. Wrapper for keras::predict_classes(). Creates a sparse model matrix with the same columns as the training data, some of which may be 0.
+predict function for kms_fit object. Places test data on same scale that the training data were by kms(). Wrapper for keras::predict_classes(). Creates a sparse model matrix with the same columns as the training data, some of which may be 0.
 }
 \examples{
 if(is_keras_available()){
@@ -31,6 +31,9 @@ if(is_keras_available()){
  company <- kms(make ~ ., mtcars[3:32, ], Nepochs = 2)
  forecast <- predict(company, mtcars[1:2, ])
  forecast$confusion
+ 
+ out <- kms(mpg ~ ., mtcars[4:32,])
+ oos <- predict(out, mtcars[1:3,])
  
 }else{
    cat("Please run install_keras() before using kms(). ?install_keras for options like gpu.")
