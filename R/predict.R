@@ -16,8 +16,11 @@
 #'  forecast <- predict(company, mtcars[1:2, ])
 #'  forecast$confusion
 #'  
-#'  out <- kms(mpg ~ ., mtcars[4:32,])
-#'  oos <- predict(out, mtcars[1:3,])
+#'  # example where y_test is unavailable
+#'  
+#'  trained <- kms(log(mpg) ~ ., mtcars[4:32,])
+#'  X_test <- subset(mtcars[1:3,], select = -mpg)  
+#'  predictions <- predict(trained, X_test)
 #'  
 #' }else{
 #'    cat("Please run install_keras() before using kms(). ?install_keras for options like gpu.")
@@ -39,7 +42,23 @@ predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
   
   newdata <- as.data.frame(newdata)
   
-  newdata_tmp <- sparse.model.matrix(object$input_formula, data = newdata, row.names = FALSE, ...)
+  y_test <- if(mean(all.vars(object$input_formula[[2]]) %in% colnames(newdata)) == 1) 
+    eval(object$input_formula[[2]], envir = newdata) else NULL
+  
+  if(is.null(y_test)){
+    if(verbose > 0)
+      message("Unable to construct y_test from newdata.\n")
+  }else{
+    
+    y_test_labels <- unique(y_test)
+    if(mean(y_test_labels %in% object$y_labels) != 1)
+      message("newdata contains outcomes not present in training data.\nCompare object$y_labels (from the trained object) to fit$y_test_labels.")
+    
+  }
+  
+  test_formula <- if(is.null(y_test)) as.formula(paste(object$input_formula[[1]], object$input_formula[[3]])) else object$input_formula
+    
+  newdata_tmp <- sparse.model.matrix(test_formula, data = newdata, row.names = FALSE, ...)
   X_test <- Matrix(0, nrow = nrow(newdata), ncol = object$P, sparse = TRUE, ...)
   colnames(X_test) <- object$colnames_x
 
@@ -50,15 +69,9 @@ predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
   X_test[ , cols] <- newdata_tmp[ , which(colnames(newdata_tmp) %in% object$colnames_x)]
   remove(newdata_tmp)
   
-  y_test <- eval(object$input_formula[[2]], envir = newdata)
-  
-  
   if(!is.null(object$train_scale)){
     
     transformation <- if(object$train_scale$scale == "zero_one") zero_one else z
-    
-    if(object$y_type == "continuous")
-      y_test <- transformation(y_test, object$train_scale$y[1], object$train_scale$y[2])
     
     # only continuous variables are scaled but
     # different levels may be observed on categorical variables in test and training
@@ -73,8 +86,11 @@ predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
       
     }
     
+    if(!is.null(y_test) & object$y_type == "continuous")
+      y_test <- transformation(y_test, object$train_scale$y[1], object$train_scale$y[2])
+    
   }
-  
+        
   if(is.null(object$y_type)) # legacy with kerasformula 0.1.0
     object$y_type <- if(object$K == 2) "binary" else "multinomial"
   
@@ -84,9 +100,7 @@ predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
                      batch_size = batch_size, verbose = verbose)
     
   }else{
-    y_test_labels <- unique(y_test)
-    if(mean(y_test_labels %in% object$y_labels) != 1)
-      message("newdata contains outcomes not present in training data.\nCompare object$y_labels (from the trained object) to fit$y_test_labels.")
+    
     # 1 + to get back to R/Fortran land... 
     y_fit <- object$y_labels[1 + predict_classes(object$model, X_test, 
                                                  batch_size = batch_size, verbose = verbose)]
@@ -94,20 +108,26 @@ predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
   
   fit <- list(fit = y_fit, y_test = y_test)
   
-  if(object$y_type == "continuous"){
+  if(!is.null(y_test)){
     
-    fit[["MSE_predictions"]] <- mean((y_fit - y_test)^2)
-    fit[["MAE_predictions"]] <- mean(abs(y_fit - y_test))
-    fit[["R2_predictions"]] <- cor(y_fit, y_test)^2
-    fit[["cor_kendals"]] <- cor(y_fit, y_test, method="kendal") # guard against broken clock predictions
-    
-  }else{
-    
-    fit[["y_test_labels"]] <- y_test_labels 
-    fit[["confusion"]] <- confusion(y_test = y_test, predictions = y_fit)
-    fit[["accuracy"]] <- mean(y_fit == y_test)
+    if(object$y_type == "continuous"){
+      
+      fit[["MSE_predictions"]] <- mean((y_fit - y_test)^2)
+      fit[["MAE_predictions"]] <- mean(abs(y_fit - y_test))
+      fit[["R2_predictions"]] <- cor(y_fit, y_test)^2
+      fit[["cor_kendals"]] <- cor(y_fit, y_test, method="kendal") # guard against broken clock predictions
+      
+    }else{
+      
+      fit[["y_test_labels"]] <- y_test_labels 
+      fit[["confusion"]] <- confusion(y_test = y_test, predictions = y_fit)
+      fit[["accuracy"]] <- mean(y_fit == y_test)
+      
+    }
     
   }
+  
+  
   
   return(fit)
     

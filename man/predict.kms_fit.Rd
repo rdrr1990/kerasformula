@@ -32,8 +32,11 @@ if(is_keras_available()){
  forecast <- predict(company, mtcars[1:2, ])
  forecast$confusion
  
- out <- kms(mpg ~ ., mtcars[4:32,])
- oos <- predict(out, mtcars[1:3,])
+ # example where y_test is unavailable
+ 
+ trained <- kms(log(mpg) ~ ., mtcars[4:32,])
+ X_test <- subset(mtcars[1:3,], select = -mpg)  
+ predictions <- predict(trained, X_test)
  
 }else{
    cat("Please run install_keras() before using kms(). ?install_keras for options like gpu.")
