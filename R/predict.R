@@ -42,18 +42,20 @@ predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
   
   newdata <- as.data.frame(newdata)
   
-  y_test <- if(mean(all.vars(object$input_formula[[2]]) %in% colnames(newdata)) == 1) 
-    eval(object$input_formula[[2]], envir = newdata) else NULL
+  y_in_newdata <- length(setdiff(all.vars(object$input_formula[[2]]), colnames(newdata))) == 0
+  y_test <- if(y_in_newdata) eval(object$input_formula[[2]], envir = newdata) else NULL
   
   if(is.null(y_test)){
     if(verbose > 0)
       message("Unable to construct y_test from newdata.\n")
   }else{
     
-    y_test_labels <- unique(y_test)
-    if(mean(y_test_labels %in% object$y_labels) != 1)
-      message("newdata contains outcomes not present in training data.\nCompare object$y_labels (from the trained object) to fit$y_test_labels.")
-    
+    if(object$y_type != "continuous"){
+      y_test_labels <- unique(y_test)
+      if(mean(y_test_labels %in% object$y_labels) != 1)
+        message("newdata contains outcomes not present in training data.\nCompare object$y_labels (from the trained object) to fit$y_test_labels.")
+    }
+        
   }
   
   test_formula <- if(is.null(y_test)) as.formula(paste(object$input_formula[[1]], object$input_formula[[3]])) else object$input_formula

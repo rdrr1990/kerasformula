@@ -58,7 +58,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     stop("Please run install_keras() before using kms(). ?install_keras for options and details like setting up gpu.")
    
   if(pTraining <= 0 || pTraining > 1) 
-    stop("pTraining, the proportion of data used for training, must be between 0 and 1.")
+    stop("pTraining, the proportion of data used for training, must be between 0 and 1. See also help(\"predict.kms_fit\").")
   
   form <- formula(input_formula, data = data)
   if(form[[1]] != "~" || length(form) != 3) 

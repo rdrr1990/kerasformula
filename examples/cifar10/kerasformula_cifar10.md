@@ -137,7 +137,7 @@ rm(X_train, X_test)
 `kms()` automatically splits the data into testing and training, however in this case the data are already split that way. Setting `kms(..., pTraining = 1)` and then calling `predict` on the outputted object along with the test data. `kms()` automatically puts data on a \[0, 1\] scale (but that can be altered, for example `kms(..., x_scale = scale)` standardizes). By default, `kms()` builds a dense model, meaning the simplest thing we can do is ...
 
 ``` r
-fit <- kms(lab ~ ., training, pTraining = 1)
+fit <- kms(as.factor(lab) ~ ., training, pTraining = 1)    # as.factor ensures classification
 plot(fit$history) + theme_minimal()
 ```
 
