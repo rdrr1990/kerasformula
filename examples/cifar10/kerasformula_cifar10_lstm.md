@@ -20,7 +20,7 @@ k %>% compile(
   metrics = c('accuracy')
 )
 
-fit <- kms(lab ~ ., training, pTraining = 1, Nepochs = 10)
+fit <- kms(as.factor(lab) ~ ., training, k, pTraining = 1, Nepochs = 10)
 plot(fit$history) + theme_minimal()
 ```
 
