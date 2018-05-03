@@ -7,7 +7,7 @@
 #' @param keras_model_seq A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: layers, loss, metrics, and optimizer.
 #' @param layers a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). 
 #' @param pTraining Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).
-#' @param seed Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(). See also see https://stackoverflow.com/questions/42022950/. 
+#' @param seed Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/. 
 #' @param validation_split Portion of data to be used for validating each epoch (i.e., portion of pTraining). To be passed to keras::fit. Default == 0.2. 
 #' @param Nepochs Number of epochs. To be passed to keras::fit. Default == 25.  
 #' @param batch_size To be passed to keras::fit and keras::predict_classes. Default == 32. 
@@ -15,7 +15,7 @@
 #' @param metrics Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to "mean_absolute_error" and "mean_absolute_percentage_error" for continuous and c("accuracy") for binary/categorical (as well whether whether examples are correctly classified in one of the top five most popular categories or not if the number of categories K > 20).  
 #' @param optimizer To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.
 #' @param scale_continuous Function to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = zero_one' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.
-#' @param drop_intercept TRUE by default, may be required by X_dist or other implementation features.     
+#' @param drop_intercept TRUE by default, may be required by implementation features.     
 #' @param verbose 0 ot 1, to be passed to keras functions. Default == 1. 
 #' @param ... Additional parameters to be passsed to Matrix::sparse.model.matrix.
 #' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training.
@@ -49,7 +49,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                                activation = c("relu", "relu", "softmax"),
                                dropout = c(0.4, 0.3, NA)), 
                  pTraining = 0.8, validation_split = 0.2, Nepochs = 25, batch_size = 32, 
-                 loss = NULL, metrics = NULL, optimizer = "optimizer_adam", 
+                 loss = NULL, metrics = NULL, optimizer = "optimizer_adam",
                  scale_continuous = "zero_one", drop_intercept=TRUE,
                  seed = list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE), 
                  verbose = 1, ...){
@@ -72,30 +72,41 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   P <- ncol(X)
   N <- nrow(X)
   
+    
   if(!is.list(seed)){
     seed_list <- list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE)
     if(is.numeric(seed))
       seed_list$seed <- seed
   }else{
-    seed_list <- seed # allow user to pass in integer which controls software but not hardware parameters
-          # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
-  } 
+      seed_list <- seed 
+      # allow user to pass in integer which controls software but not hardware parameters too
+      # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
+    } 
   if(is.null(seed_list$seed)){
+    
       a <- as.numeric(format(Sys.time(), "%OS"))
       b <- 10^6*as.numeric(format(Sys.time(), "%OS6"))
       seed_list$seed <- sample(a:b, size=1)
+      
   } 
   
-  use_session_with_seed(seed = seed_list$seed, 
+  if(is.null(keras_model_seq)){
+    
+    use_session_with_seed(seed = seed_list$seed, 
                           disable_gpu = seed_list$disable_gpu, 
                           disable_parallel_cpu = seed_list$disable_parallel_cpu, 
                           quiet = (verbose == 0)) 
-  # calls set.seed() and Python equivalents...
-  # seed intended to keep training / validation / test splits constant. 
-  # additional parameters intended to remove simulation error
-  # and ensure exact results...
-  # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
-  
+    # calls set.seed() and Python equivalents...
+    # seed intended to keep training / validation / test splits constant. 
+    # additional parameters intended to remove simulation error
+    # and ensure exact results...
+    # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
+    
+  }else{
+    set.seed(seed_list$seed)
+    message("R seed set to ", seed_list$seed, " but for full reproducibility it is necessary to set the seed for the graph on the Python side too. kms cannot do this automatically when a compiled model is passed as argument. In R, call use_session_with_seed() before compiling. For detail:\n\nhttps://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md")
+  }
+    
   if(pTraining > 0){
     
     split <- sample(c("train", "test"), size = N, 

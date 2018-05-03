@@ -37,9 +37,9 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 
 \item{scale_continuous}{Function to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = zero_one' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.}
 
-\item{drop_intercept}{TRUE by default, may be required by X_dist or other implementation features.}
+\item{drop_intercept}{TRUE by default, may be required by implementation features.}
 
-\item{seed}{Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(). See also see https://stackoverflow.com/questions/42022950/.}
+\item{seed}{Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/.}
 
 \item{verbose}{0 ot 1, to be passed to keras functions. Default == 1.}
 
