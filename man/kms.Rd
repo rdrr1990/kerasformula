@@ -10,7 +10,7 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
   batch_size = 32, loss = NULL, metrics = NULL,
   optimizer = "optimizer_adam", scale_continuous = "zero_one",
   drop_intercept = TRUE, seed = list(seed = NULL, disable_gpu = FALSE,
-  disable_parallel_cpu = FALSE), verbose = 0, ...)
+  disable_parallel_cpu = FALSE), verbose = 1, ...)
 }
 \arguments{
 \item{input_formula}{an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "stars ~ mentions.tasty + mentions.fun". kms treats numeric data a continuous outcome for which a regression-style model is fit. To do classification,}
@@ -31,7 +31,7 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 
 \item{loss}{To be passed to keras::compile. Defaults to "binary_crossentropy", "categorical_crossentropy", or "mean_squared_error" based on input_formula and data.}
 
-\item{metrics}{Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to c("accuracy") for binary/categorical and "mean_absolute_error" for continuous.}
+\item{metrics}{Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to "mean_absolute_error" and "mean_absolute_percentage_error" for continuous and c("accuracy") for binary/categorical (as well whether whether examples are correctly classified in one of the top five most popular categories or not if the number of categories K > 20).}
 
 \item{optimizer}{To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.}
 
@@ -41,7 +41,7 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 
 \item{seed}{Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(). See also see https://stackoverflow.com/questions/42022950/.}
 
-\item{verbose}{0 ot 1, to be passed to keras functions. Default == 0.}
+\item{verbose}{0 ot 1, to be passed to keras functions. Default == 1.}
 
 \item{...}{Additional parameters to be passsed to Matrix::sparse.model.matrix.}
 }

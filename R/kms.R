@@ -12,11 +12,11 @@
 #' @param Nepochs Number of epochs. To be passed to keras::fit. Default == 25.  
 #' @param batch_size To be passed to keras::fit and keras::predict_classes. Default == 32. 
 #' @param loss To be passed to keras::compile. Defaults to "binary_crossentropy", "categorical_crossentropy", or "mean_squared_error" based on input_formula and data.
-#' @param metrics Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to c("accuracy") for binary/categorical and "mean_absolute_error" for continuous. 
+#' @param metrics Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to "mean_absolute_error" and "mean_absolute_percentage_error" for continuous and c("accuracy") for binary/categorical (as well whether whether examples are correctly classified in one of the top five most popular categories or not if the number of categories K > 20).  
 #' @param optimizer To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.
 #' @param scale_continuous Function to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = zero_one' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.
 #' @param drop_intercept TRUE by default, may be required by X_dist or other implementation features.     
-#' @param verbose 0 ot 1, to be passed to keras functions. Default == 0. 
+#' @param verbose 0 ot 1, to be passed to keras functions. Default == 1. 
 #' @param ... Additional parameters to be passsed to Matrix::sparse.model.matrix.
 #' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training.
 #' @examples
@@ -52,10 +52,10 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                  loss = NULL, metrics = NULL, optimizer = "optimizer_adam", 
                  scale_continuous = "zero_one", drop_intercept=TRUE,
                  seed = list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE), 
-                 verbose = 0, ...){
+                 verbose = 1, ...){
   
   if(!is_keras_available())
-    stop("Please run install_keras() before using kms(). ?install_keras for options and details like setting up gpu.")
+    stop("Please run install_keras() before using kms(). ?install_keras for details on options like conda or gpu. Also helpful:\n\nhttps://tensorflow.rstudio.com/tensorflow/articles/installation.html")
    
   if(pTraining <= 0 || pTraining > 1) 
     stop("pTraining, the proportion of data used for training, must be between 0 and 1. See also help(\"predict.kms_fit\").")
@@ -86,15 +86,21 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       seed_list$seed <- sample(a:b, size=1)
   } 
   
-  use_session_with_seed(seed = seed_list$seed, 
-                        disable_gpu = seed_list$disable_gpu, 
-                        disable_parallel_cpu = seed_list$disable_parallel_cpu, 
-                        quiet = verbose > 0) 
-  # calls set.seed() and Python equivalents...
-  # seed intended to keep training / validation / test splits constant. 
-  # additional parameters intended to remove simulation error
-  # and ensure exact results...
-  # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
+  if(!is.null(keras_model_seq)){
+    
+    use_session_with_seed(seed = seed_list$seed, 
+                          disable_gpu = seed_list$disable_gpu, 
+                          disable_parallel_cpu = seed_list$disable_parallel_cpu, 
+                          quiet = (verbose == 0)) 
+    # calls set.seed() and Python equivalents...
+    # seed intended to keep training / validation / test splits constant. 
+    # additional parameters intended to remove simulation error
+    # and ensure exact results...
+    # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
+  }else{
+    warning("kms cannot set Python seed when a compiled model is passed in. Stop and call use_session_with_seed() before compiling the model for full replicability. ")
+  }
+  
 
   if(pTraining > 0){
     
@@ -141,7 +147,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       if(is.null(metrics))
         metrics <- c("accuracy")
       
-      if(n_distinct_y > 7)
+      if(n_distinct_y > 20)
         metrics <- c(metrics, "top_k_categorical_accuracy")
   }
 
@@ -150,7 +156,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     
     y_cat <- to_categorical(match(y, labs) - 1) # make parameter y.categorical (??)
     # match() - 1 for Python/C style indexing arrays, which starts at 0, must "undo"
-    if(pTraining > 0){
+    if(pTraining < 1){
       y_train <- y_cat[split == "train",]
       y_test <- y_cat[split == "test",]
     }else{
@@ -159,7 +165,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     remove(y_cat)
   }else{
     
-    if(pTraining > 0){
+    if(pTraining < 1){
       y_train <- as.numeric(y)[split == "train"]
       y_test <- as.numeric(y)[split == "test"]
     }else{
@@ -256,11 +262,12 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     
   }
 
-  history <- keras_model_seq %>% fit(X_train, y_train, 
+  history <- fit(keras_model_seq, X_train, y_train, 
     epochs = Nepochs, 
     batch_size = batch_size, 
     validation_split = validation_split,
-    verbose = verbose
+    verbose = verbose, 
+    view_metrics = verbose > 0
   )
   
   object <- list(history = history,
