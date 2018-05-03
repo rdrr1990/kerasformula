@@ -86,22 +86,16 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       seed_list$seed <- sample(a:b, size=1)
   } 
   
-  if(!is.null(keras_model_seq)){
-    
-    use_session_with_seed(seed = seed_list$seed, 
+  use_session_with_seed(seed = seed_list$seed, 
                           disable_gpu = seed_list$disable_gpu, 
                           disable_parallel_cpu = seed_list$disable_parallel_cpu, 
                           quiet = (verbose == 0)) 
-    # calls set.seed() and Python equivalents...
-    # seed intended to keep training / validation / test splits constant. 
-    # additional parameters intended to remove simulation error
-    # and ensure exact results...
-    # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
-  }else{
-    warning("kms cannot set Python seed when a compiled model is passed in. Stop and call use_session_with_seed() before compiling the model for full replicability. ")
-  }
+  # calls set.seed() and Python equivalents...
+  # seed intended to keep training / validation / test splits constant. 
+  # additional parameters intended to remove simulation error
+  # and ensure exact results...
+  # see https://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md
   
-
   if(pTraining > 0){
     
     split <- sample(c("train", "test"), size = N, 
@@ -274,9 +268,9 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                  input_formula = form, model = keras_model_seq, 
                  loss = loss, optimizer = optimizer, metrics = metrics,
                  N = N, P = P, K = n_distinct_y,
-                 y_test = if(pTraining == 0) NULL else y[split == "test"],
-                 y_type = y_type,
+                 y_test = if(pTraining == 1) NULL else y[split == "test"],
                  # avoid y_test <- y_cat[split == "test", ]
+                 y_type = y_type,
                  y_labels = labs, colnames_x = colnames_x, 
                  seed = seed, split = split, 
                  train_scale = train_scale)
