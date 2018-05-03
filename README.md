@@ -1,7 +1,7 @@
 kerasformula
 ================
 Pete Mohanty
-January 11, 2018
+May 3, 2018
 
 [![](https://cranlogs.r-pkg.org/badges/kerasformula)](https://cran.r-project.org/package=kerasformula)
 
