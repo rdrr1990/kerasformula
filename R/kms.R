@@ -5,11 +5,11 @@
 #' @param input_formula an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "stars ~ mentions.tasty + mentions.fun". kms treats numeric data a continuous outcome for which a regression-style model is fit. To do classification,
 #' @param data a data.frame.
 #' @param keras_model_seq A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: layers, loss, metrics, and optimizer.
-#' @param layers a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). 
+#' @param layers a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. kms defines the number of layers as the length of the vector of activations. Inputs that appear once are repeated Nlayer times. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). For penalty terms, options must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". 
 #' @param pTraining Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).
 #' @param seed Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/. 
 #' @param validation_split Portion of data to be used for validating each epoch (i.e., portion of pTraining). To be passed to keras::fit. Default == 0.2. 
-#' @param Nepochs Number of epochs. To be passed to keras::fit. Default == 25.  
+#' @param Nepochs Number of epochs; default == 15. To be passed to keras::fit.  
 #' @param batch_size To be passed to keras::fit and keras::predict_classes. Default == 32. 
 #' @param loss To be passed to keras::compile. Defaults to "binary_crossentropy", "categorical_crossentropy", or "mean_squared_error" based on input_formula and data.
 #' @param metrics Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to "mean_absolute_error" and "mean_absolute_percentage_error" for continuous and c("accuracy") for binary/categorical (as well whether whether examples are correctly classified in one of the top five most popular categories or not if the number of categories K > 20).  
@@ -47,8 +47,13 @@
 kms <- function(input_formula, data, keras_model_seq = NULL, 
                  layers = list(units = c(256, 128, NA), 
                                activation = c("relu", "relu", "softmax"),
-                               dropout = c(0.4, 0.3, NA)), 
-                 pTraining = 0.8, validation_split = 0.2, Nepochs = 25, batch_size = 32, 
+                               dropout = c(0.4, 0.3, NA),
+                               use_bias = TRUE,
+                               kernel_regularizer = "regularizer_l1",
+                               bias_regularizer = "regularizer_l1",
+                               activity_regularizer = "regularizer_l1"
+                               ), 
+                 pTraining = 0.8, validation_split = 0.2, Nepochs = 15, batch_size = 32, 
                  loss = NULL, metrics = NULL, optimizer = "optimizer_adam",
                  scale_continuous = "zero_one", drop_intercept=TRUE,
                  seed = list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE), 
@@ -57,8 +62,8 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   if(!is_keras_available())
     stop("Please run install_keras() before using kms(). ?install_keras for details on options like conda or gpu. Also helpful:\n\nhttps://tensorflow.rstudio.com/tensorflow/articles/installation.html")
    
-  if(!is.null(keras_model_seq) & (n_distinct(lapply(layers, length)) != 1))
-    warning("\nThe number of units, activation functions, and dropout rates is not the same. Note the final number of units will be automatically determined by the data. Valid example:\n\nlayers = list(units = c(256, 128, NA),\n\t\tactivation = c('relu', 'relu', 'softmax'),\n\t\tdropout = c(0.4, 0.3, NA))")
+  # if(!is.null(keras_model_seq) & (n_distinct(lapply(layers, length)) != 1))
+  #  warning("\nThe number of units, activation functions, and dropout rates is not the same. Note the final number of units will be automatically determined by the data. Valid example:\n\nlayers = list(units = c(256, 128, NA),\n\t\tactivation = c('relu', 'relu', 'softmax'),\n\t\tdropout = c(0.4, 0.3, NA))")
 
   if(pTraining <= 0 || pTraining > 1) 
     stop("pTraining, the proportion of data used for training, must be between 0 and 1. See also help(\"predict.kms_fit\").")
@@ -74,7 +79,6 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   colnames_x <- colnames(X)
   P <- ncol(X)
   N <- nrow(X)
-  
     
   if(!is.list(seed)){
     seed_list <- list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE)
@@ -243,7 +247,13 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   
   if(is.null(keras_model_seq)){
     
-    Nlayers <- length(layers$units)
+    Nlayers <- length(layers$activation)
+    
+    for(i in 1:length(layers)){
+      if(length(layers[[i]]) == 1){
+        layers[[i]] <- rep(layers[[i]], Nlayers)
+      }
+    }
     
     if(is.na(layers$units[Nlayers]))
       layers$units[Nlayers] <- max(1, ncol(y_train))
@@ -251,12 +261,22 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     if(y_type == "continuous")
       layers$activation[Nlayers] <- "linear"
     
+    penalty <- function(reg_type){
+      if(is.null(reg_type)) NULL else do.call(reg_type, list(0.01))
+    }
+    
     keras_model_seq <- keras_model_sequential() 
     for(i in 1:Nlayers){
       keras_model_seq <- if(i == 1){
-        layer_dense(keras_model_seq, units = layers$units[i], activation = layers$activation[i], input_shape = c(P))
+        layer_dense(keras_model_seq, units = layers$units[i], 
+                    activation = layers$activation[i], input_shape = c(P), 
+                    use_bias = layers$use_bias[i], 
+                    kernel_regularizer = penalty(layers$kernel_regularizer[i]),
+                    bias_regularizer = penalty(layers$bias_regularizer[i]),
+                    activity_regularizer = penalty(layers$activity_regularizer[i])
+                    )
       }else{
-        layer_dense(keras_model_seq, units = layers$units[i], activation = layers$activation[i])
+        layer_dense(keras_model_seq, units = layers$units[i], activation = layers$activation[i], use_bias = layers$use_bias[i])
       }
       if(i != Nlayers)
         model <- layer_dropout(keras_model_seq, rate = layers$rate[i])

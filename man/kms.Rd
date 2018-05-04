@@ -6,7 +6,9 @@
 \usage{
 kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
   c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4,
-  0.3, NA)), pTraining = 0.8, validation_split = 0.2, Nepochs = 25,
+  0.3, NA), use_bias = TRUE, kernel_regularizer = "regularizer_l1",
+  bias_regularizer = "regularizer_l1", activity_regularizer = "regularizer_l1"),
+  pTraining = 0.8, validation_split = 0.2, Nepochs = 15,
   batch_size = 32, loss = NULL, metrics = NULL,
   optimizer = "optimizer_adam", scale_continuous = "zero_one",
   drop_intercept = TRUE, seed = list(seed = NULL, disable_gpu = FALSE,
@@ -19,13 +21,13 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 
 \item{keras_model_seq}{A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: layers, loss, metrics, and optimizer.}
 
-\item{layers}{a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear").}
+\item{layers}{a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. kms defines the number of layers as the length of the vector of activations. Inputs that appear once are repeated Nlayer times. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). For penalty terms, options must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2".}
 
 \item{pTraining}{Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).}
 
 \item{validation_split}{Portion of data to be used for validating each epoch (i.e., portion of pTraining). To be passed to keras::fit. Default == 0.2.}
 
-\item{Nepochs}{Number of epochs. To be passed to keras::fit. Default == 25.}
+\item{Nepochs}{Number of epochs; default == 15. To be passed to keras::fit.}
 
 \item{batch_size}{To be passed to keras::fit and keras::predict_classes. Default == 32.}
 
