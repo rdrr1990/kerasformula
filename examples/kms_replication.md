@@ -11,12 +11,50 @@ out <- kms(log10(gross/budget) ~ . -title, movies, scale="z",
            seed = list(seed = 12345, disable_gpu = TRUE, disable_parallel_cpu = TRUE))
 ```
 
+    ___________________________________________________________________________
+    Layer (type)                     Output Shape                  Param #     
+    ===========================================================================
+    dense_1 (Dense)                  (None, 256)                   355328      
+    ___________________________________________________________________________
+    dropout_1 (Dropout)              (None, 256)                   0           
+    ___________________________________________________________________________
+    dense_2 (Dense)                  (None, 128)                   32896       
+    ___________________________________________________________________________
+    dropout_2 (Dropout)              (None, 128)                   0           
+    ___________________________________________________________________________
+    dense_3 (Dense)                  (None, 1)                     129         
+    ===========================================================================
+    Total params: 388,353
+    Trainable params: 388,353
+    Non-trainable params: 0
+    ___________________________________________________________________________
+
 We can confirm this works that worked as follows:
 
 ``` r
 out2 <- kms(log10(gross/budget) ~ . -title, movies, scale="z",
            seed = list(seed = 12345, disable_gpu = TRUE, disable_parallel_cpu = TRUE))
+```
 
+    ___________________________________________________________________________
+    Layer (type)                     Output Shape                  Param #     
+    ===========================================================================
+    dense_1 (Dense)                  (None, 256)                   355328      
+    ___________________________________________________________________________
+    dropout_1 (Dropout)              (None, 256)                   0           
+    ___________________________________________________________________________
+    dense_2 (Dense)                  (None, 128)                   32896       
+    ___________________________________________________________________________
+    dropout_2 (Dropout)              (None, 128)                   0           
+    ___________________________________________________________________________
+    dense_3 (Dense)                  (None, 1)                     129         
+    ===========================================================================
+    Total params: 388,353
+    Trainable params: 388,353
+    Non-trainable params: 0
+    ___________________________________________________________________________
+
+``` r
 out$MSE_predictions
 ```
 
@@ -62,6 +100,14 @@ cor(out$predictions, out2$predictions, method="kendal") # typically last to conv
 
          [,1]
     [1,]    1
+
+or to visually inspect weights...
+
+``` r
+get_weights(out$model)       # not run
+get_weights(out2$model)
+summary(out$model)
+```
 
 `kms` implements a wrapper for `keras::use_session_with_seed`. See also [stack](https://stackoverflow.com/questions/42022950/) and [tf](https://www.tensorflow.org/api_docs/python/tf/set_random_seed) docs. Thanks to @VladPerervenko for helpful [suggestions](https://github.com/rdrr1990/kerasformula/issues/1) on this topic (mistakes are of course all mine)!
 
