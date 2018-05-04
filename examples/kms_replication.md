@@ -20,13 +20,13 @@ out2 <- kms(log10(gross/budget) ~ . -title, movies, scale="z",
 out$MSE_predictions
 ```
 
-    [1] 0.7508322
+    [1] 0.6909273
 
 ``` r
 out2$MSE_predictions
 ```
 
-    [1] 0.7508322
+    [1] 0.6909273
 
 ``` r
 identical(out$y_test, out2$y_test)
@@ -39,6 +39,29 @@ identical(out$predictions, out2$predictions)
 ```
 
     [1] TRUE
+
+For other cases, to assess degree of convergence...
+
+``` r
+cor(out$predictions, out2$predictions)
+```
+
+         [,1]
+    [1,]    1
+
+``` r
+cor(out$predictions, out2$predictions, method="spearman")
+```
+
+         [,1]
+    [1,]    1
+
+``` r
+cor(out$predictions, out2$predictions, method="kendal") # typically last to converge
+```
+
+         [,1]
+    [1,]    1
 
 `kms` implements a wrapper for `keras::use_session_with_seed`. See also [stack](https://stackoverflow.com/questions/42022950/) and [tf](https://www.tensorflow.org/api_docs/python/tf/set_random_seed) docs. Thanks to @VladPerervenko for helpful [suggestions](https://github.com/rdrr1990/kerasformula/issues/1) on this topic (mistakes are of course all mine)!
 

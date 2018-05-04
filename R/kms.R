@@ -5,7 +5,7 @@
 #' @param input_formula an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "stars ~ mentions.tasty + mentions.fun". kms treats numeric data a continuous outcome for which a regression-style model is fit. To do classification,
 #' @param data a data.frame.
 #' @param keras_model_seq A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: layers, loss, metrics, and optimizer.
-#' @param layers a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. kms defines the number of layers as the length of the vector of activations. Inputs that appear once are repeated Nlayer times. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). For penalty terms, options must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". 
+#' @param layers a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. kms defines the number of layers as the length of the vector of activations. Inputs that appear once are repeated Nlayer times. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). For penalty terms, options must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Also, "kernel_initalizer" defaults to "glorot_uniform" for classification and "glorot_normal" for regression (but either can be inputted with quotes).  
 #' @param pTraining Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).
 #' @param seed Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/. 
 #' @param validation_split Portion of data to be used for validating each epoch (i.e., portion of pTraining). To be passed to keras::fit. Default == 0.2. 
@@ -49,6 +49,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                                activation = c("relu", "relu", "softmax"),
                                dropout = c(0.4, 0.3, NA),
                                use_bias = TRUE,
+                               kernel_initializer = NULL,
                                kernel_regularizer = "regularizer_l1",
                                bias_regularizer = "regularizer_l1",
                                activity_regularizer = "regularizer_l1"
@@ -249,6 +250,9 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     
     Nlayers <- length(layers$activation)
     
+    if(is.null(layers$kernel_initializer))
+      layers$kernel_initializer <- if(y_type == "continuous") "glorot_normal" else "glorot_uniform"
+    
     for(i in 1:length(layers)){
       if(length(layers[[i]]) == 1){
         layers[[i]] <- rep(layers[[i]], Nlayers)
@@ -271,6 +275,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
         layer_dense(keras_model_seq, units = layers$units[i], 
                     activation = layers$activation[i], input_shape = c(P), 
                     use_bias = layers$use_bias[i], 
+                    kernel_initializer = layers$kernel_initializer[i],
                     kernel_regularizer = penalty(layers$kernel_regularizer[i]),
                     bias_regularizer = penalty(layers$bias_regularizer[i]),
                     activity_regularizer = penalty(layers$activity_regularizer[i])
