@@ -279,7 +279,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
         layer_dense(keras_model_seq, units = layers$units[i], activation = layers$activation[i], use_bias = layers$use_bias[i])
       }
       if(i != Nlayers)
-        model <- layer_dropout(keras_model_seq, rate = layers$rate[i])
+        model <- layer_dropout(keras_model_seq, rate = layers$rate[i], seed = seed_list$seed)
     }
     
     keras_model_seq %>% compile(
