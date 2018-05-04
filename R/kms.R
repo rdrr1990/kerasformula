@@ -38,7 +38,7 @@
 #' }
 #'  
 #' @author Pete Mohanty
-#' @importFrom keras to_categorical keras_model_sequential layer_dense layer_dropout compile fit evaluate predict_classes is_keras_available
+#' @importFrom keras to_categorical keras_model_sequential layer_dense layer_dropout compile fit evaluate predict_classes is_keras_available get_weights save_model_hdf5 save_model_weights_hdf5
 #' @importFrom Matrix sparse.model.matrix
 #' @importFrom stats as.formula
 #' @importFrom dplyr n_distinct %>%
@@ -132,7 +132,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   y <- eval(form[[2]], envir = data)
   n_distinct_y <- n_distinct(y)
   
-  if(is.numeric(y)){
+  if(is.numeric(y) & n_distinct_y > 2){
       
       if(verbose > 0) 
         message("y does not appear to be categorical; proceeding with regression. To instead do classification, stop and do something like\n\n out <- kms(as.factor(y) ~ x1 + x2, ...)" )
@@ -348,6 +348,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   return(object)
   
 }
+
 
 ##
 ## helper functions

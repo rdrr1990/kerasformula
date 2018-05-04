@@ -1,43 +1,25 @@
----
-title: "kms: foRmulas foR keRas"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{kerasformula}
-  %\VignetteEngine{knitr::knitr}
-  %\VignetteEncoding{UTF-8}
-type: docs
-repo: https://github.com/rstudio/keras
-menu:
-  main:
-    name: "kms: foRmulas foR keRas"
-    identifier: "keras-R-formulas"
-    parent: "keras-using-keras"
-    weight: 50
----
+kms: foRmulas foR keRas
+================
 
-```{r, echo = FALSE, messsage=FALSE, warning=FALSE}
-library(knitr)
-opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
-```
-
-
-The goal of this document is to introduce `kms` (as in `keras_model_sequential()`), a regression-style function which allows users to call `keras` neural nets with `R` `formula` objects (hence, library(`kerasformula`)). 
+The goal of this document is to introduce `kms` (as in `keras_model_sequential()`), a regression-style function which allows users to call `keras` neural nets with `R` `formula` objects (hence, library(`kerasformula`)).
 
 First, make sure that `keras` is properly configured:
 
-```{r, eval = FALSE}
+``` r
 install.packages("keras")
 library(keras)
 install_keras() # see https://keras.rstudio.com/ for details. 
+library(kerasformula)
 ```
 
-`kms` splits training and test data into sparse matrices.`kms` also auto-detects whether the dependent variable is categorical, binary, or continuous. `kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets (dense neural nets of various input shapes and dropout rates). The final example below also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models). 
+`kms` splits training and test data into sparse matrices.`kms` also auto-detects whether the dependent variable is categorical, binary, or continuous. `kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets (dense neural nets of various input shapes and dropout rates). The final example below also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models).
 
-# IMDB Movie Reviews
+IMDB Movie Reviews
+==================
 
-This example works with some of the `imdb` movie review data that comes with library(`keras`). Specifically, this example compares the default dense model that `ksm` generates to the `lstm` model described [here](https://keras.rstudio.com/articles/examples/imdb_lstm.html). To expedite package building and installation, the code below is not actually run but can be run in under six minutes on a 2017 MacBook Pro with 16 GB of RAM (of which the majority of the time is for the lstm). 
+This example works with some of the `imdb` movie review data that comes with library(`keras`). Specifically, this example compares the default dense model that `ksm` generates to the `lstm` model described [here](https://keras.rstudio.com/articles/examples/imdb_lstm.html). To expedite package building and installation, the code below is not actually run but can be run in under six minutes on a 2017 MacBook Pro with 16 GB of RAM (of which the majority of the time is for the lstm).
 
-```{r, eval = FALSE}
+``` r
 max_features <- 5000 # 5,000 words (ranked by popularity) found in movie reviews
 maxlen <- 50  # Cut texts after 50 words (among top max_features most common words) 
 Nsample <- 1000 
@@ -63,22 +45,19 @@ plot(out_dense$history)  # incredibly useful
 out_dense$confusion
 ```
 
+        1
+      0 107
+      1 105
 
-```
-    1
-  0 107
-  1 105
-```
-```{r, eval=FALSE}
+``` r
 cat('Test accuracy:', out_dense$evaluations$acc, "\n")
 ```
-```
-Test accuracy: 0.495283 
-```
+
+    Test accuracy: 0.495283 
 
 Pretty bad--that's a 'broken clock' model. Suppose want to add some more layers. Below find the default setting for `layers` appart from an additional softmax layer. Notice in `layers` below anything that appears only once is repeated for each layer as appropriate.
 
-```{r, eval = FALSE}
+``` r
 out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, seed=123, scale=NULL,
                  layers = list(units = c(512, 256, 128, NA), 
                                activation = c("softmax", "relu", "relu", "softmax"),
@@ -91,21 +70,20 @@ out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, seed=123,
                                ))
 out_dense$confusion
 ```
-```
-     1
-  0 92
-  1 106
-```
-```{r, eval = FALSE}
+
+         1
+      0 92
+      1 106
+
+``` r
 cat('Test accuracy:', out_dense$evaluations$acc, "\n")
 ```
-```
-Test accuracy: 0.4816514
-```
+
+    Test accuracy: 0.4816514
 
 No progress. Suppose we want to build an `lstm` model and pass it to `ksm`.
 
-```{r, eval = FALSE}
+``` r
 use_session_with_seed(12345)
 k <- keras_model_sequential()
 k %>%
@@ -122,25 +100,22 @@ out_lstm <- kms("y ~ .", imdb_df[demo_sample, ],
                 keras_model_seq = k, Nepochs = 10, seed = 12345, scale = NULL)
 out_lstm$confusion
 ```
-```
-     0  1
-  0 74 23
-  1 23 79
-```
 
-```{r, eval=FALSE}
+         0  1
+      0 74 23
+      1 23 79
+
+``` r
 cat('Test accuracy:', out_lstm$evaluations$acc, "\n")
 ```
-```
-Test accuracy: 0.7688442 
-```
+
+    Test accuracy: 0.7688442 
 
 76.8% out-of-sample accuracy. That's marked improvement!
 
 If you're OK with `->` (right assignment), the above is equivalent to:
 
-```{r, eval=FALSE}
-
+``` r
 use_session_with_seed(12345)
 
 keras_model_sequential() %>%
@@ -157,7 +132,5 @@ keras_model_sequential() %>%
             kms(input_formula = "y ~ .", data = imdb_df[demo_sample, ], 
                 Nepochs = 10, seed = 12345, scale = NULL) -> out_lstm
 ```
-
-
 
 For another worked example starting with raw data (from `rtweet`) visit [here](https://github.com/rdrr1990/code/blob/master/kms.md).
