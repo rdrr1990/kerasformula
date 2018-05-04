@@ -57,6 +57,9 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   if(!is_keras_available())
     stop("Please run install_keras() before using kms(). ?install_keras for details on options like conda or gpu. Also helpful:\n\nhttps://tensorflow.rstudio.com/tensorflow/articles/installation.html")
    
+  if(!is.null(keras_model_seq) & (n_distinct(lapply(layers, length)) != 1))
+    warning("\nThe number of units, activation functions, and dropout rates is not the same. Note the final number of units will be automatically determined by the data. Valid example:\n\nlayers = list(units = c(256, 128, NA),\n\t\tactivation = c('relu', 'relu', 'softmax'),\n\t\tdropout = c(0.4, 0.3, NA))")
+
   if(pTraining <= 0 || pTraining > 1) 
     stop("pTraining, the proportion of data used for training, must be between 0 and 1. See also help(\"predict.kms_fit\").")
   
@@ -240,13 +243,13 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   
   if(is.null(keras_model_seq)){
     
-    if(is.na(layers$units[length(layers$units)]))
-      layers$units[length(layers$units)] <- max(1, ncol(y_train))
+    Nlayers <- length(layers$units)
+    
+    if(is.na(layers$units[Nlayers]))
+      layers$units[Nlayers] <- max(1, ncol(y_train))
     
     if(y_type == "continuous")
-      layers$activation <- c("softmax", "softmax", "linear")
-    
-    Nlayers <- length(layers$units)
+      layers$activation[Nlayers] <- "linear"
     
     keras_model_seq <- keras_model_sequential() 
     for(i in 1:Nlayers){
