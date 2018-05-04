@@ -16,7 +16,7 @@
 #' @param optimizer To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.
 #' @param scale_continuous Function to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = zero_one' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.
 #' @param drop_intercept TRUE by default, may be required by implementation features.     
-#' @param verbose 0 ot 1, to be passed to keras functions. Default == 1. 
+#' @param verbose Default == 1. Setting to 0 disables progress bar and epoch-by-epoch plots (disabling them is recommended for knitting RMarkdowns if X11 not installed).
 #' @param ... Additional parameters to be passsed to Matrix::sparse.model.matrix.
 #' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training.
 #' @examples
@@ -294,6 +294,8 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     )
     
   }
+  
+  if(verbose > 0) summary(keras_model_seq)
 
   history <- fit(keras_model_seq, X_train, y_train, 
     epochs = Nepochs, 

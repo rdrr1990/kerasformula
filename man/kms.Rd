@@ -43,7 +43,7 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 
 \item{seed}{Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/.}
 
-\item{verbose}{0 ot 1, to be passed to keras functions. Default == 1.}
+\item{verbose}{Default == 1. Setting to 0 disables progress bar and epoch-by-epoch plots (disabling them is recommended for knitting RMarkdowns if X11 not installed).}
 
 \item{...}{Additional parameters to be passsed to Matrix::sparse.model.matrix.}
 }
