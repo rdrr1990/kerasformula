@@ -155,7 +155,10 @@ keras_model_sequential() %>%
                 optimizer = 'adam', metrics = c('accuracy')) %>%
   
             kms(input_formula = "y ~ .", data = imdb_df[demo_sample, ], 
-                Nepochs = 10, seed = 12345, scale = NULL) -> out_lstm
+                Nepochs = 10, seed = 12345, scale = NULL) -> 
+  out_lstm
+
+plot(out_lstm$history)
 ```
 
 

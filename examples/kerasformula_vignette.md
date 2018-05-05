@@ -130,7 +130,8 @@ keras_model_sequential() %>%
                 optimizer = 'adam', metrics = c('accuracy')) %>%
   
             kms(input_formula = "y ~ .", data = imdb_df[demo_sample, ], 
-                Nepochs = 10, seed = 12345, scale = NULL) -> out_lstm
+                Nepochs = 10, seed = 12345, scale = NULL) -> 
+  out_lstm
 ```
 
 For another worked example starting with raw data (from `rtweet`) visit [here](https://github.com/rdrr1990/code/blob/master/kms.md).
