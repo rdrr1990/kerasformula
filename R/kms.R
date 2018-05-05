@@ -39,9 +39,9 @@
 #' }
 #'  
 #' @author Pete Mohanty
-#' @importFrom keras to_categorical keras_model_sequential layer_dense layer_dropout compile fit evaluate predict_classes is_keras_available get_weights save_model_hdf5 save_model_weights_hdf5
+#' @importFrom keras to_categorical keras_model_sequential layer_dense layer_dropout compile fit evaluate predict_classes is_keras_available get_weights save_model_hdf5 save_model_weights_hdf5 use_session_with_seed
 #' @importFrom Matrix sparse.model.matrix
-#' @importFrom stats as.formula
+#' @importFrom stats as.formula cor formula model.matrix predict sd
 #' @importFrom dplyr n_distinct %>%
 #' 
 #' @export
