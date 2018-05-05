@@ -2,10 +2,10 @@
 #' 
 #' A regression-style function call for keras_model_sequential() which uses formulas and sparse matrices. A sequential model is a linear stack of layers.
 #' 
-#' @param input_formula an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "stars ~ mentions.tasty + mentions.fun". kms treats numeric data a continuous outcome for which a regression-style model is fit. To do classification,
+#' @param input_formula an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "mpg ~ cylinders". kms treats numeric data with more than two distinct values a continuous outcome for which a regression-style model is fit. Factors and character variables are classified; to force classification, "as.factor(cyl) ~ .". 
 #' @param data a data.frame.
 #' @param keras_model_seq A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: layers, loss, metrics, and optimizer.
-#' @param layers a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA)). If the final element of units is NA (default), set to the number of unique elements in y. kms defines the number of layers as the length of the vector of activations. Inputs that appear once are repeated Nlayer times. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). For penalty terms, options must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Also, "kernel_initalizer" defaults to "glorot_uniform" for classification and "glorot_normal" for regression (but either can be inputted with quotes).  
+#' @param layers a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA), ...). If the final element of units is NA (default), set to the number of unique elements in y. kms defines the number of layers as the length of the vector of activations. Inputs that appear once are repeated Nlayer times. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). For penalty terms, options must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Also, "kernel_initalizer" defaults to "glorot_uniform" for classification and "glorot_normal" for regression (but either can be inputted with quotes).  
 #' @param pTraining Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).
 #' @param seed Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/. 
 #' @param validation_split Portion of data to be used for validating each epoch (i.e., portion of pTraining). To be passed to keras::fit. Default == 0.2. 
@@ -15,10 +15,11 @@
 #' @param metrics Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to "mean_absolute_error" and "mean_absolute_percentage_error" for continuous and c("accuracy") for binary/categorical (as well whether whether examples are correctly classified in one of the top five most popular categories or not if the number of categories K > 20).  
 #' @param optimizer To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.
 #' @param scale_continuous Function to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = zero_one' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.
-#' @param drop_intercept TRUE by default, may be required by implementation features.     
+#' @param sparse_data Default == FALSE. If TRUE, X is constructed by sparse.model.matrix() instead of model.matrix(). Recommended to improve memory usage if there are a large number of categorical variables or a few categorical variables with a large number of levels. May compromise speed, particularly if X is mostly numeric.
+#' @param drop_intercept TRUE by default.     
 #' @param verbose Default == 1. Setting to 0 disables progress bar and epoch-by-epoch plots (disabling them is recommended for knitting RMarkdowns if X11 not installed).
 #' @param ... Additional parameters to be passsed to Matrix::sparse.model.matrix.
-#' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training.
+#' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training. To extract or save weights, see https://tensorflow.rstudio.com/keras/reference/save_model_hdf5.html 
 #' @examples
 #' if(is_keras_available()){
 #' 
@@ -57,6 +58,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                  pTraining = 0.8, validation_split = 0.2, Nepochs = 15, batch_size = 32, 
                  loss = NULL, metrics = NULL, optimizer = "optimizer_adam",
                  scale_continuous = "zero_one", drop_intercept=TRUE,
+                 sparse_data = FALSE,
                  seed = list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE), 
                  verbose = 1, ...){
   
@@ -74,7 +76,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     stop("Expecting formula of the form\n\ny ~ x1 + x2 + x3\n\nwhere y, x1, x2... are found in (the data.frame) data.")
   
   data <- as.data.frame(data)
-  X <- sparse.model.matrix(form, data = data, row.names = FALSE, ...)
+  X <- if(sparse_data) sparse.model.matrix(form, data = data, row.names = FALSE, ...) else model.matrix(form, data = data, row.names = FALSE, ...) 
   if(drop_intercept)
     X <- X[,-1]
   colnames_x <- colnames(X)
@@ -311,7 +313,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                  N = N, P = P, K = n_distinct_y,
                  y_test = if(pTraining == 1) NULL else y[split == "test"],
                  # avoid y_test <- y_cat[split == "test", ]
-                 y_type = y_type,
+                 y_type = y_type, sparse_data = sparse_data,
                  y_labels = labs, colnames_x = colnames_x, 
                  seed = seed, split = split, 
                  train_scale = train_scale)

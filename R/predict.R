@@ -60,7 +60,7 @@ predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
   
   test_formula <- if(is.null(y_test)) as.formula(paste(object$input_formula[[1]], object$input_formula[[3]])) else object$input_formula
     
-  newdata_tmp <- sparse.model.matrix(test_formula, data = newdata, row.names = FALSE, ...)
+  newdata_tmp <- if(object$sparse_data) sparse.model.matrix(test_formula, data = newdata, row.names = FALSE, ...) else model.matrix(test_formula, data = newdata, row.names = FALSE, ...)
   X_test <- Matrix(0, nrow = nrow(newdata), ncol = object$P, sparse = TRUE, ...)
   colnames(X_test) <- object$colnames_x
 
