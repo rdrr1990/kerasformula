@@ -14,4 +14,3 @@ examples/*Rmd
 examples/*/*tar*
 examples/**/*html
 inst/doc/*html
-examples/.DS*
