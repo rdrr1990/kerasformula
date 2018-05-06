@@ -1,4 +1,4 @@
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE, messsage=FALSE, warning=FALSE------------------------
 library(knitr)
 opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 
@@ -23,7 +23,9 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 #  P <- ncol(imdb_df) - 1
 #  colnames(imdb_df) <- c("y", paste0("x", 1:P))
 #  
-#  out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10)
+#  out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10,
+#                   scale=NULL) # scale=NULL means leave data on original scale
+#  
 #  
 #  plot(out_dense$history)  # incredibly useful
 #  # choose Nepochs to maximize out of sample accuracy
@@ -34,16 +36,23 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 #  cat('Test accuracy:', out_dense$evaluations$acc, "\n")
 
 ## ---- eval = FALSE-------------------------------------------------------
-#  out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10,
+#  out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, seed=123, scale=NULL,
 #                   layers = list(units = c(512, 256, 128, NA),
-#                                 activation = c("relu", "relu", "relu", "softmax"),
-#                                 dropout = c(0.5, 0.4, 0.3, NA)))
+#                                 activation = c("softmax", "relu", "relu", "softmax"),
+#                                 dropout = c(0.75, 0.4, 0.3, NA),
+#                                 use_bias = TRUE,
+#                                 kernel_initializer = NULL,
+#                                 kernel_regularizer = "regularizer_l1",
+#                                 bias_regularizer = "regularizer_l1",
+#                                 activity_regularizer = "regularizer_l1"
+#                                 ))
 #  out_dense$confusion
 
 ## ---- eval = FALSE-------------------------------------------------------
 #  cat('Test accuracy:', out_dense$evaluations$acc, "\n")
 
 ## ---- eval = FALSE-------------------------------------------------------
+#  use_session_with_seed(12345)
 #  k <- keras_model_sequential()
 #  k %>%
 #    layer_embedding(input_dim = max_features, output_dim = 128) %>%
@@ -55,10 +64,31 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 #    optimizer = 'adam',
 #    metrics = c('accuracy')
 #  )
-#  out_lstm <- kms(input_formula = "y ~ .", data = imdb_df[demo_sample, ],
-#                  keras_model_seq = k, Nepochs = 5, seed = 12345)
+#  out_lstm <- kms("y ~ .", imdb_df[demo_sample, ],
+#                  keras_model_seq = k, Nepochs = 10, seed = 12345, scale = NULL)
 #  out_lstm$confusion
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  cat('Test accuracy:', out_lstm$evaluations$acc, "\n")
+
+## ---- eval=FALSE---------------------------------------------------------
+#  
+#  use_session_with_seed(12345)
+#  
+#  keras_model_sequential() %>%
+#  
+#    layer_embedding(input_dim = max_features, output_dim = 128) %>%
+#  
+#      layer_lstm(units = 64, dropout = 0.2, recurrent_dropout = 0.2) %>%
+#  
+#        layer_dense(units = 1, activation = 'sigmoid') %>%
+#  
+#          compile(loss = 'binary_crossentropy',
+#                  optimizer = 'adam', metrics = c('accuracy')) %>%
+#  
+#              kms(input_formula = "y ~ .", data = imdb_df[demo_sample, ],
+#                  Nepochs = 10, seed = 12345, scale = NULL) ->
+#    out_lstm
+#  
+#  plot(out_lstm$history)
 

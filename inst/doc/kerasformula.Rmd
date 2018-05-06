@@ -15,7 +15,7 @@ menu:
     weight: 50
 ---
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, messsage=FALSE, warning=FALSE}
 library(knitr)
 opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 ```
@@ -31,11 +31,11 @@ library(keras)
 install_keras() # see https://keras.rstudio.com/ for details. 
 ```
 
-`kms` splits training and test data into sparse matrices.`kms` also auto-detects whether the dependent variable is categorical or binary. `kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets (dense neural nets of various input shapes and dropout rates). The final example below also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models). 
+`kms` splits training and test data into sparse matrices.`kms` also auto-detects whether the dependent variable is categorical, binary, or continuous. `kms` accepts the major parameters found in `library(keras)` as inputs (loss function, batch size, number of epochs, etc.) and allows users to customize basic neural nets (dense neural nets of various input shapes and dropout rates). The final example below also shows how to pass a compiled `keras_model_sequential` to `kms` (preferable for more complex models). 
 
 # IMDB Movie Reviews
 
-This example works with some of the `imdb` movie review data that comes with library(`keras`). Specifically, this example compares the default dense model that `ksm` generates to the `lstm` model described [here](https://keras.rstudio.com/articles/examples/imdb_lstm.html). To expedite package building and installation, the code below is not actually run but can be run in under six minutes on a 2017 MacBook Pro with 16 GB of RAM (of which the majority of the time is for the lstm).
+This example works with some of the `imdb` movie review data that comes with library(`keras`). Specifically, this example compares the default dense model that `ksm` generates to the `lstm` model described [here](https://keras.rstudio.com/articles/examples/imdb_lstm.html). To expedite package building and installation, the code below is not actually run but can be run in under six minutes on a 2017 MacBook Pro with 16 GB of RAM (of which the majority of the time is for the lstm). 
 
 ```{r, eval = FALSE}
 max_features <- 5000 # 5,000 words (ranked by popularity) found in movie reviews
@@ -53,7 +53,9 @@ demo_sample <- sample(nrow(imdb_df), Nsample)
 P <- ncol(imdb_df) - 1
 colnames(imdb_df) <- c("y", paste0("x", 1:P))
 
-out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10)
+out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, 
+                 scale=NULL) # scale=NULL means leave data on original scale
+
 
 plot(out_dense$history)  # incredibly useful 
 # choose Nepochs to maximize out of sample accuracy
@@ -74,19 +76,25 @@ cat('Test accuracy:', out_dense$evaluations$acc, "\n")
 Test accuracy: 0.495283 
 ```
 
-Pretty bad--that's a 'broken clock' model. Suppose want to add some more layers. 
+Pretty bad--that's a 'broken clock' model. Suppose want to add some more layers. Below find the default setting for `layers` appart from an additional softmax layer. Notice in `layers` below anything that appears only once is repeated for each layer as appropriate.
 
 ```{r, eval = FALSE}
-out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, 
+out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, seed=123, scale=NULL,
                  layers = list(units = c(512, 256, 128, NA), 
-                               activation = c("relu", "relu", "relu", "softmax"), 
-                               dropout = c(0.5, 0.4, 0.3, NA)))
+                               activation = c("softmax", "relu", "relu", "softmax"),
+                               dropout = c(0.75, 0.4, 0.3, NA),
+                               use_bias = TRUE,
+                               kernel_initializer = NULL,
+                               kernel_regularizer = "regularizer_l1",
+                               bias_regularizer = "regularizer_l1",
+                               activity_regularizer = "regularizer_l1"
+                               ))
 out_dense$confusion
 ```
 ```
      1
-  0 113
-  1 105
+  0 92
+  1 106
 ```
 ```{r, eval = FALSE}
 cat('Test accuracy:', out_dense$evaluations$acc, "\n")
@@ -98,6 +106,7 @@ Test accuracy: 0.4816514
 No progress. Suppose we want to build an `lstm` model and pass it to `ksm`.
 
 ```{r, eval = FALSE}
+use_session_with_seed(12345)
 k <- keras_model_sequential()
 k %>%
   layer_embedding(input_dim = max_features, output_dim = 128) %>% 
@@ -109,23 +118,49 @@ k %>% compile(
   optimizer = 'adam',
   metrics = c('accuracy')
 )
-out_lstm <- kms(input_formula = "y ~ .", data = imdb_df[demo_sample, ], 
-                keras_model_seq = k, Nepochs = 5, seed = 12345)
+out_lstm <- kms("y ~ .", imdb_df[demo_sample, ], 
+                keras_model_seq = k, Nepochs = 10, seed = 12345, scale = NULL)
 out_lstm$confusion
 ```
 ```
-    0  1
-  0 80 17
-  1 25 77
+     0  1
+  0 74 23
+  1 23 79
 ```
 
 ```{r, eval=FALSE}
 cat('Test accuracy:', out_lstm$evaluations$acc, "\n")
 ```
 ```
-Test accuracy: 0.7889447 
+Test accuracy: 0.7688442 
 ```
 
-78.9% out-of-sample accuracy. That's marked improvement!
+76.8% out-of-sample accuracy. That's marked improvement!
+
+If you're OK with `->` (right assignment), the above is equivalent to:
+
+```{r, eval=FALSE}
+
+use_session_with_seed(12345)
+
+keras_model_sequential() %>%
+  
+  layer_embedding(input_dim = max_features, output_dim = 128) %>% 
+  
+    layer_lstm(units = 64, dropout = 0.2, recurrent_dropout = 0.2) %>% 
+  
+      layer_dense(units = 1, activation = 'sigmoid') %>% 
+  
+        compile(loss = 'binary_crossentropy', 
+                optimizer = 'adam', metrics = c('accuracy')) %>%
+  
+            kms(input_formula = "y ~ .", data = imdb_df[demo_sample, ], 
+                Nepochs = 10, seed = 12345, scale = NULL) -> 
+  out_lstm
+
+plot(out_lstm$history)
+```
+
+
 
 For another worked example starting with raw data (from `rtweet`) visit [here](https://github.com/rdrr1990/code/blob/master/kms.md).

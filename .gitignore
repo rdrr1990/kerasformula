@@ -9,3 +9,9 @@ R/scratchwork*.R
 .DS_Store 
 *.Rcheck/ 
 kerasformula.Rproj
+examples/**/*Rmd
+examples/*Rmd
+examples/*/*tar*
+examples/**/*html
+inst/doc/*html
+examples/.DS*
