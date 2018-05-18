@@ -4,6 +4,7 @@ Pete Mohanty
 May 3, 2018
 
 [![](https://cranlogs.r-pkg.org/badges/kerasformula)](https://cran.r-project.org/package=kerasformula)
+[![cran checks](https://cranchecks.info/badges/summary/kerasformula)](https://cranchecks.info/pkgs/kerasformula)
 
 kerasformula
 ============
