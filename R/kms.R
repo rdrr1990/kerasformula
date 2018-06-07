@@ -77,11 +77,18 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   
   data <- as.data.frame(data)
   X <- if(sparse_data) sparse.model.matrix(form, data = data, row.names = FALSE, ...) else model.matrix(form, data = data, row.names = FALSE, ...) 
+  
+  if(verbose > 0)
+    if(as.numeric(unlist(strsplit(format(object.size(X), unit="Mb"), " "))[1]))
+      message("Model Matrix size: ", format(object.size(X), unit="Gb"), "\n")
+  
   if(drop_intercept)
     X <- X[,-1]
   colnames_x <- colnames(X)
   P <- ncol(X)
   N <- nrow(X)
+  
+  if(verbose > 0) message("N: ", N, ", P: ", P, "\n\n")
     
   if(!is.list(seed)){
     seed_list <- list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE)
@@ -114,7 +121,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     
   }else{
     set.seed(seed_list$seed)
-    message("R seed set to ", seed_list$seed, " but for full reproducibility it is necessary to set the seed for the graph on the Python side too. kms cannot do this automatically when a compiled model is passed as argument. In R, call use_session_with_seed() before compiling. For detail:\n\nhttps://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md")
+    if(verbose > 0) message("R seed set to ", seed_list$seed, " but for full reproducibility it is necessary to set the seed for the graph on the Python side too. kms cannot do this automatically when a compiled model is passed as argument. In R, call use_session_with_seed() before compiling. For detail:\n\nhttps://github.com/rdrr1990/kerasformula/blob/master/examples/kms_replication.md")
   }
     
   if(pTraining > 0){
@@ -150,11 +157,11 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       
   }else{
         
-    
-      if(verbose > 0) 
-        message("y appears categorical. Proceeding with classification.\n" )
       labs <- sort(unique(y))
       y_type <- if(n_distinct_y > 2) "multinomial" else "binary"
+      if(verbose > 0) 
+        message("y appears categorical. Proceeding with ", y_type, " classification.\n" )
+      
       
       if(is.null(loss)) 
         loss <- if(n_distinct_y == 2) "binary_crossentropy" else "categorical_crossentropy" 
@@ -179,6 +186,10 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     }
     remove(y_cat)
   }else{
+    
+    # binary case
+    if(is.character(y))
+      y <- as.factor(y)
     
     if(pTraining < 1){
       y_train <- as.numeric(y)[split == "train"]
@@ -242,8 +253,12 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       train_scale$y[2] <- stat2(y_train)
       y_train <- transformation(y_train)
       
+      cat("range y_test:", range(y_test))
+      
       if(pTraining < 1)
         y_test <- transformation(y_test, train_scale$y[1], train_scale$y[2])
+      
+      cat("range y_test:", range(y_test))
     }
     
   }
@@ -332,6 +347,13 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       object[["R2_predictions"]] <- cor(y_fit, y_test)^2
       object[["cor_kendals"]] <- cor(y_fit, y_test, method="kendal") # guard against broken clock predictions
       object[["predictions"]] <- y_fit
+      
+      est <- data.frame(y = c(y_test, y_fit),
+                        type = c(rep("y_test", length(y_test)), rep("predictions", length(y_fit))))
+      if(verbose > 0) 
+        ggplot(est, aes(x=y, fill=type)) + geom_histogram() + labs(title="Holdout Data vs. Predictions")
+      
+      
       
     }else{
 
