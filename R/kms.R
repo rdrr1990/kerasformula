@@ -205,46 +205,51 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     
     cols_to_scale <- which(apply(X_train, 2, n_distinct) > 2)
     
-    # information about scale of training data
-    
-    train_scale <- list()
-    train_scale[["cols_to_scale"]] <- cols_to_scale
-    train_scale[["X"]] <- matrix(nrow=2, ncol=length(cols_to_scale))
-    colnames(train_scale$X) <- colnames_x[cols_to_scale]
-    
-    train_scale[["scale"]] <- scale_continuous
-    
-    if(scale_continuous == "zero_one"){
+    if(length(cols_to_scale) > 0){
       
-      stat1 <- min
-      stat2 <- max
-      transformation <- zero_one
-      rownames(train_scale$X) <- c("min", "max")
+      # information about scale of training data
       
-    }else{
+      train_scale <- list()
+      train_scale[["cols_to_scale"]] <- cols_to_scale
+      train_scale[["X"]] <- matrix(nrow=2, ncol=length(cols_to_scale))
+      colnames(train_scale$X) <- colnames_x[cols_to_scale]
       
-      stat1 <- mean
-      stat2 <- sd
-      rownames(train_scale$X) <- c("mean", "sd")
-      transformation <- z
+      train_scale[["scale"]] <- scale_continuous
       
-    }
-    
-    for(i in 1:length(cols_to_scale)){
-      
-      train_scale$X[1, i] <- stat1(X_train[ , cols_to_scale[i]])
-      train_scale$X[2, i] <- stat2(X_train[ , cols_to_scale[i]])
-      X_train[ , cols_to_scale[i]] <- transformation(X_train[ , cols_to_scale[i]])
-    
-      if(pTraining < 1){
-        X_test[ , cols_to_scale[i]] <- transformation(X_test[ , cols_to_scale[i]], 
-                                                      train_scale$X[1, i], 
-                                                      train_scale$X[2, i])
-        # place test data on scale observed in training data
+      if(scale_continuous == "zero_one"){
+        
+        stat1 <- min
+        stat2 <- max
+        transformation <- zero_one
+        rownames(train_scale$X) <- c("min", "max")
+        
+      }else{
+        
+        stat1 <- mean
+        stat2 <- sd
+        rownames(train_scale$X) <- c("mean", "sd")
+        transformation <- z
+        
       }
       
+      for(i in 1:length(cols_to_scale)){
+        
+        train_scale$X[1, i] <- stat1(X_train[ , cols_to_scale[i]])
+        train_scale$X[2, i] <- stat2(X_train[ , cols_to_scale[i]])
+        X_train[ , cols_to_scale[i]] <- transformation(X_train[ , cols_to_scale[i]])
+        
+        if(pTraining < 1){
+          X_test[ , cols_to_scale[i]] <- transformation(X_test[ , cols_to_scale[i]], 
+                                                        train_scale$X[1, i], 
+                                                        train_scale$X[2, i])
+          # place test data on scale observed in training data
+        }
+        
+      }
+    
     }
     
+      
     if(y_type == "continuous"){
       
       train_scale[["y"]] <- matrix(nrow=2, ncol=1)
