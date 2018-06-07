@@ -65,9 +65,18 @@ if(is_keras_available()){
  pCorrect
  company$confusion
  # plot(history$company) # helps pick Nepochs
- company <- kms(make ~ ., mtcars, Nepochs = 1, seed = 2018,
-               layers = list(units = c(11, 9, NA), activation = c("relu", "relu", "softmax"),
-               dropout = c(0.4, 0.3, NA)))
+ # below
+ # find the default settings for layers
+ company <- kms(make ~ ., mtcars,
+               layers = list(units = c(256, 128, NA), 
+                             activation = c("relu", "relu", "softmax"),
+                             dropout = c(0.4, 0.3, NA),
+                             use_bias = TRUE,
+                             kernel_initializer = NULL,
+                             kernel_regularizer = "regularizer_l1",
+                             bias_regularizer = "regularizer_l1",
+                             activity_regularizer = "regularizer_l1"
+            ))
  # ?predict.kms_fit to see how to predict on newdata
 }else{
    cat("Please run install_keras() before using kms(). ?install_keras for options like gpu.")

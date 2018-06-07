@@ -25,6 +25,8 @@ confusion <- function(object = NULL, y_test = NULL, predictions = NULL, return_x
   if(return_xtab){
     
     cf <- table(obj$y_test, obj$predictions)
+    colnames(cf) <- paste0(colnames(cf), "_pred")
+    rownames(cf) <- paste0(rownames(cf), "_obs")
     return(cf)
     
   }else{
