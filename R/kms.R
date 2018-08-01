@@ -52,6 +52,7 @@
 #' @importFrom Matrix sparse.model.matrix
 #' @importFrom stats as.formula cor formula model.matrix predict sd
 #' @importFrom dplyr n_distinct %>%
+#' @importFrom ggplot2 ggplot
 #' 
 #' @export
 kms <- function(input_formula, data, keras_model_seq = NULL, 
