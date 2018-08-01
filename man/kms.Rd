@@ -4,24 +4,40 @@
 \alias{kms}
 \title{kms}
 \usage{
-kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
-  c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4,
-  0.3, NA), use_bias = TRUE, kernel_initializer = NULL, kernel_regularizer =
-  "regularizer_l1", bias_regularizer = "regularizer_l1", activity_regularizer =
-  "regularizer_l1"), pTraining = 0.8, validation_split = 0.2,
-  Nepochs = 15, batch_size = 32, loss = NULL, metrics = NULL,
-  optimizer = "optimizer_adam", scale_continuous = "zero_one",
-  drop_intercept = TRUE, sparse_data = FALSE, seed = list(seed = NULL,
-  disable_gpu = FALSE, disable_parallel_cpu = FALSE), verbose = 1, ...)
+kms(input_formula, data, keras_model_seq = NULL, units = c(256, 128),
+  activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3),
+  use_bias = TRUE, kernel_initializer = NULL,
+  kernel_regularizer = "regularizer_l1",
+  bias_regularizer = "regularizer_l1",
+  activity_regularizer = "regularizer_l1", pTraining = 0.8,
+  validation_split = 0.2, Nepochs = 15, batch_size = 32, loss = NULL,
+  metrics = NULL, optimizer = "optimizer_adam",
+  scale_continuous = "zero_one", drop_intercept = TRUE,
+  sparse_data = FALSE, seed = list(seed = NULL, disable_gpu = FALSE,
+  disable_parallel_cpu = FALSE), verbose = 1, ...)
 }
 \arguments{
 \item{input_formula}{an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "mpg ~ cylinders". kms treats numeric data with more than two distinct values a continuous outcome for which a regression-style model is fit. Factors and character variables are classified; to force classification, "as.factor(cyl) ~ .".}
 
 \item{data}{a data.frame.}
 
-\item{keras_model_seq}{A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: layers, loss, metrics, and optimizer.}
+\item{keras_model_seq}{A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: N_layers, units, activation, dropout, use_bias, kernel_initializer, kernel_regularizer, bias_regularizer, activity_regularizer, loss, metrics, and optimizer.}
 
-\item{layers}{a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA), ...). If the final element of units is NA (default), set to the number of unique elements in y. kms defines the number of layers as the length of the vector of activations. Inputs that appear once are repeated Nlayer times. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). For penalty terms, options must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Also, "kernel_initalizer" defaults to "glorot_uniform" for classification and "glorot_normal" for regression (but either can be inputted with quotes).}
+\item{units}{How many units in each layer? The final number of units will be added based on whether regression or classification is being done. Should be length 1, length N_layers - 1, or something that can be repeated to form a length N_layers - 1 vector. Default is c(256, 128).}
+
+\item{activation}{Activation function for each layer, starting with the input. Default: c("relu", "relu", "softmax"). Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.}
+
+\item{dropout}{Dropout rate for each layer, starting with the input. Not applicable to final layer. Default: c(0.4, 0.3). Should be length 1, length N_layers - 1, or something that can be repeated to form a length N_layers - 1 vector.}
+
+\item{use_bias}{See ?keras::use_bias. Default: TRUE. Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.}
+
+\item{kernel_initializer}{Defaults to "glorot_uniform" for classification and "glorot_normal" for regression (but either can be inputted). Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.}
+
+\item{kernel_regularizer}{Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.}
+
+\item{bias_regularizer}{Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.}
+
+\item{activity_regularizer}{Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.}
 
 \item{pTraining}{Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).}
 
@@ -48,12 +64,14 @@ kms(input_formula, data, keras_model_seq = NULL, layers = list(units =
 \item{verbose}{Default == 1. Setting to 0 disables progress bar and epoch-by-epoch plots (disabling them is recommended for knitting RMarkdowns if X11 not installed).}
 
 \item{...}{Additional parameters to be passsed to Matrix::sparse.model.matrix.}
+
+\item{N_layers}{How many layers in the model? Default == 3. Subsequent parameters (units, activation, dropout, use_bias, kernel_initializer, kernel_regularizer, bias_regularizer, and activity_regularizer) may be inputted as vectors that are of length N_layers (or N_layers - 1 for units and dropout). The length of those vectors may also be length 1 or a multiple of N_layers (or N_layers - 1 for units and dropout).}
 }
 \value{
 kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training. To extract or save weights, see https://tensorflow.rstudio.com/keras/reference/save_model_hdf5.html
 }
 \description{
-A regression-style function call for keras_model_sequential() which uses formulas and sparse matrices. A sequential model is a linear stack of layers.
+A regression-style function call for keras_model_sequential() which uses formulas and, optionally, sparse matrices. A sequential model is a linear stack of layers.
 }
 \examples{
 if(is_keras_available()){
@@ -68,15 +86,15 @@ if(is_keras_available()){
  # below
  # find the default settings for layers
  company <- kms(make ~ ., mtcars,
-               layers = list(units = c(256, 128, NA), 
-                             activation = c("relu", "relu", "softmax"),
-                             dropout = c(0.4, 0.3, NA),
-                             use_bias = TRUE,
-                             kernel_initializer = NULL,
-                             kernel_regularizer = "regularizer_l1",
-                             bias_regularizer = "regularizer_l1",
-                             activity_regularizer = "regularizer_l1"
-            ))
+                units = c(256, 128), 
+                activation = c("relu", "relu", "softmax"),
+                dropout = c(0.4, 0.3),
+                use_bias = TRUE,
+                kernel_initializer = NULL,
+                kernel_regularizer = "regularizer_l1",
+                bias_regularizer = "regularizer_l1",
+                activity_regularizer = "regularizer_l1"
+                )
  # ?predict.kms_fit to see how to predict on newdata
 }else{
    cat("Please run install_keras() before using kms(). ?install_keras for options like gpu.")

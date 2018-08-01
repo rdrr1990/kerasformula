@@ -1,11 +1,19 @@
 #' kms
 #' 
-#' A regression-style function call for keras_model_sequential() which uses formulas and sparse matrices. A sequential model is a linear stack of layers.
+#' A regression-style function call for keras_model_sequential() which uses formulas and, optionally, sparse matrices. A sequential model is a linear stack of layers.
 #' 
 #' @param input_formula an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "mpg ~ cylinders". kms treats numeric data with more than two distinct values a continuous outcome for which a regression-style model is fit. Factors and character variables are classified; to force classification, "as.factor(cyl) ~ .". 
 #' @param data a data.frame.
-#' @param keras_model_seq A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: layers, loss, metrics, and optimizer.
-#' @param layers a list that creates a dense Keras model. Contains the number of units, activation type, and dropout rate. For classification, defaults to three layers: layers = list(units = c(256, 128, NA), activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3, NA), ...). If the final element of units is NA (default), set to the number of unique elements in y. kms defines the number of layers as the length of the vector of activations. Inputs that appear once are repeated Nlayer times. See ?layer_dense or ?layer_dropout. For regression, activation = c("relu", "softmax", "linear"). For penalty terms, options must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Also, "kernel_initalizer" defaults to "glorot_uniform" for classification and "glorot_normal" for regression (but either can be inputted with quotes).  
+#' @param keras_model_seq A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: N_layers, units, activation, dropout, use_bias, kernel_initializer, kernel_regularizer, bias_regularizer, activity_regularizer, loss, metrics, and optimizer.
+#' @param N_layers How many layers in the model? Default == 3. Subsequent parameters (units, activation, dropout, use_bias, kernel_initializer, kernel_regularizer, bias_regularizer, and activity_regularizer) may be inputted as vectors that are of length N_layers (or N_layers - 1 for units and dropout). The length of those vectors may also be length 1 or a multiple of N_layers (or N_layers - 1 for units and dropout). 
+#' @param units How many units in each layer? The final number of units will be added based on whether regression or classification is being done. Should be length 1, length N_layers - 1, or something that can be repeated to form a length N_layers - 1 vector. Default is c(256, 128).  
+#' @param activation Activation function for each layer, starting with the input. Default: c("relu", "relu", "softmax"). Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.
+#' @param dropout Dropout rate for each layer, starting with the input. Not applicable to final layer. Default: c(0.4, 0.3). Should be length 1, length N_layers - 1, or something that can be repeated to form a length N_layers - 1 vector.
+#' @param use_bias See ?keras::use_bias. Default: TRUE. Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.
+#' @param kernel_initializer Defaults to "glorot_uniform" for classification and "glorot_normal" for regression (but either can be inputted). Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.
+#' @param kernel_regularizer Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.
+#' @param bias_regularizer Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.
+#' @param activity_regularizer Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.   
 #' @param pTraining Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).
 #' @param seed Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/. 
 #' @param validation_split Portion of data to be used for validating each epoch (i.e., portion of pTraining). To be passed to keras::fit. Default == 0.2. 
@@ -33,15 +41,15 @@
 #'  # below
 #'  # find the default settings for layers
 #'  company <- kms(make ~ ., mtcars,
-#'                layers = list(units = c(256, 128, NA), 
-#'                              activation = c("relu", "relu", "softmax"),
-#'                              dropout = c(0.4, 0.3, NA),
-#'                              use_bias = TRUE,
-#'                              kernel_initializer = NULL,
-#'                              kernel_regularizer = "regularizer_l1",
-#'                              bias_regularizer = "regularizer_l1",
-#'                              activity_regularizer = "regularizer_l1"
-#'             ))
+#'                 units = c(256, 128), 
+#'                 activation = c("relu", "relu", "softmax"),
+#'                 dropout = c(0.4, 0.3),
+#'                 use_bias = TRUE,
+#'                 kernel_initializer = NULL,
+#'                 kernel_regularizer = "regularizer_l1",
+#'                 bias_regularizer = "regularizer_l1",
+#'                 activity_regularizer = "regularizer_l1"
+#'                 )
 #'  # ?predict.kms_fit to see how to predict on newdata
 #' }else{
 #'    cat("Please run install_keras() before using kms(). ?install_keras for options like gpu.")
@@ -56,30 +64,48 @@
 #' 
 #' @export
 kms <- function(input_formula, data, keras_model_seq = NULL, 
-                 layers = list(units = c(256, 128, NA), 
-                               activation = c("relu", "relu", "softmax"),
-                               dropout = c(0.4, 0.3, NA),
-                               use_bias = TRUE,
-                               kernel_initializer = NULL,
-                               kernel_regularizer = "regularizer_l1",
-                               bias_regularizer = "regularizer_l1",
-                               activity_regularizer = "regularizer_l1"
-                               ), 
-                 pTraining = 0.8, validation_split = 0.2, Nepochs = 15, batch_size = 32, 
-                 loss = NULL, metrics = NULL, optimizer = "optimizer_adam",
-                 scale_continuous = "zero_one", drop_intercept=TRUE,
-                 sparse_data = FALSE,
-                 seed = list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE), 
-                 verbose = 1, ...){
+                units = c(256, 128), 
+                activation = c("relu", "relu", "softmax"),
+                dropout = c(0.4, 0.3),
+                use_bias = TRUE,
+                kernel_initializer = NULL,
+                kernel_regularizer = "regularizer_l1",
+                bias_regularizer = "regularizer_l1",
+                activity_regularizer = "regularizer_l1",
+                pTraining = 0.8, validation_split = 0.2, Nepochs = 15, batch_size = 32, 
+                loss = NULL, metrics = NULL, optimizer = "optimizer_adam",
+                scale_continuous = "zero_one", drop_intercept=TRUE,
+                sparse_data = FALSE,
+                seed = list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE), 
+                verbose = 1, ...){
   
   if(!is_keras_available())
     stop("Please run install_keras() before using kms(). ?install_keras for details on options like conda or gpu. Also helpful:\n\nhttps://tensorflow.rstudio.com/tensorflow/articles/installation.html")
    
   # if(!is.null(keras_model_seq) & (n_distinct(lapply(layers, length)) != 1))
-  #  warning("\nThe number of units, activation functions, and dropout rates is not the same. Note the final number of units will be automatically determined by the data. Valid example:\n\nlayers = list(units = c(256, 128, NA),\n\t\tactivation = c('relu', 'relu', 'softmax'),\n\t\tdropout = c(0.4, 0.3, NA))")
+  #  warning("\nThe number of units, activation functions, and dropout rates is not the same. Note the final number of units will be automatically determined by the data. Valid example:\n\N_layers = list(units = c(256, 128, NA),\n\t\tactivation = c('relu', 'relu', 'softmax'),\n\t\tdropout = c(0.4, 0.3, NA))")
 
   if(pTraining <= 0 || pTraining > 1) 
     stop("pTraining, the proportion of data used for training, must be between 0 and 1. See also help(\"predict.kms_fit\").")
+  
+  if(is.null(keras_model_seq)){
+    
+    layers <- list()
+    layers[["units"]] <- c(rep(units, Nlayers / length(units)), NA)
+    layers[["activation"]] <- rep(units, Nlayers / length(activation))
+    layers[["dropout"]] <- c(rep(units, Nlayers / length(dropout)), NA)
+    layers[["use_bias"]] <- rep(units, Nlayers / length(use_bias))
+    layers[["kernel_initializer"]] <- rep(units, Nlayers / length(kernel_initializer))
+    layers[["kernel_regularizer"]] <- rep(units, Nlayers / length(kernel_regularizer))
+    layers[["bias_regularizer"]] <- rep(units, Nlayers / length(bias_regularizer))
+    layers[["activity_regularizer"]] <- rep(units, Nlayers / length(activity_regularizer))
+    
+    params_lengths <- unique(unlist(lapply(layers, length)))
+    if(length(params_lengths) > 1 || params_length != Nlayers){
+      warning("N_layers was inputted as ", N_layers, " but at least one of the arguments units, activation, dropout, etc. was/were of unexpected length. All arguments may be of length 1. See kms() documentation to see which ones should be length N_layers and which N_layers - 1 (or something that can be repeated to form something of length N_layers or N_layers - 1).")
+    }
+  }
+  
   
   form <- formula(input_formula, data = data)
   if(form[[1]] != "~" || length(form) != 3) 
@@ -280,29 +306,29 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   
   if(is.null(keras_model_seq)){
     
-    Nlayers <- length(layers$activation)
+    N_layers <- length(layers$activation)
     
     if(is.null(layers$kernel_initializer))
       layers$kernel_initializer <- if(y_type == "continuous") "glorot_normal" else "glorot_uniform"
     
     for(i in 1:length(layers)){
       if(length(layers[[i]]) == 1){
-        layers[[i]] <- rep(layers[[i]], Nlayers)
+        layers[[i]] <- rep(layers[[i]], N_layers)
       }
     }
     
-    if(is.na(layers$units[Nlayers]))
-      layers$units[Nlayers] <- max(1, ncol(y_train))
+    if(is.na(layers$units[N_layers]))
+      layers$units[N_layers] <- max(1, ncol(y_train))
     
     if(y_type == "continuous")
-      layers$activation[Nlayers] <- "linear"
+      layers$activation[N_layers] <- "linear"
     
     penalty <- function(reg_type){
       if(is.null(reg_type)) NULL else do.call(reg_type, list(0.01))
     }
     
     keras_model_seq <- keras_model_sequential() 
-    for(i in 1:Nlayers){
+    for(i in 1:N_layers){
       keras_model_seq <- if(i == 1){
         layer_dense(keras_model_seq, units = layers$units[i], 
                     activation = layers$activation[i], input_shape = c(P), 
@@ -315,7 +341,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       }else{
         layer_dense(keras_model_seq, units = layers$units[i], activation = layers$activation[i], use_bias = layers$use_bias[i])
       }
-      if(i != Nlayers)
+      if(i != N_layers)
         model <- layer_dropout(keras_model_seq, rate = layers$rate[i], seed = seed_list$seed)
     }
     
