@@ -60,13 +60,15 @@
 #' @importFrom Matrix sparse.model.matrix
 #' @importFrom stats as.formula cor formula model.matrix predict sd
 #' @importFrom dplyr n_distinct %>%
-#' @importFrom ggplot2 ggplot
+#' @importFrom ggplot2 ggplot aes geom_histogram ggtitle
+#' @importFrom utils object.size 
 #' 
 #' @export
 kms <- function(input_formula, data, keras_model_seq = NULL, 
+                N_layers = 3,
                 units = c(256, 128), 
                 activation = c("relu", "relu", "softmax"),
-                dropout = c(0.4, 0.3),
+                dropout = 0.4,
                 use_bias = TRUE,
                 kernel_initializer = NULL,
                 kernel_regularizer = "regularizer_l1",
@@ -87,24 +89,6 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
 
   if(pTraining <= 0 || pTraining > 1) 
     stop("pTraining, the proportion of data used for training, must be between 0 and 1. See also help(\"predict.kms_fit\").")
-  
-  if(is.null(keras_model_seq)){
-    
-    layers <- list()
-    layers[["units"]] <- c(rep(units, Nlayers / length(units)), NA)
-    layers[["activation"]] <- rep(units, Nlayers / length(activation))
-    layers[["dropout"]] <- c(rep(units, Nlayers / length(dropout)), NA)
-    layers[["use_bias"]] <- rep(units, Nlayers / length(use_bias))
-    layers[["kernel_initializer"]] <- rep(units, Nlayers / length(kernel_initializer))
-    layers[["kernel_regularizer"]] <- rep(units, Nlayers / length(kernel_regularizer))
-    layers[["bias_regularizer"]] <- rep(units, Nlayers / length(bias_regularizer))
-    layers[["activity_regularizer"]] <- rep(units, Nlayers / length(activity_regularizer))
-    
-    params_lengths <- unique(unlist(lapply(layers, length)))
-    if(length(params_lengths) > 1 || params_length != Nlayers){
-      warning("N_layers was inputted as ", N_layers, " but at least one of the arguments units, activation, dropout, etc. was/were of unexpected length. All arguments may be of length 1. See kms() documentation to see which ones should be length N_layers and which N_layers - 1 (or something that can be repeated to form something of length N_layers or N_layers - 1).")
-    }
-  }
   
   
   form <- formula(input_formula, data = data)
@@ -294,52 +278,56 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       train_scale$y[2] <- stat2(y_train)
       y_train <- transformation(y_train)
       
-      cat("range y_test:", range(y_test))
-      
       if(pTraining < 1)
         y_test <- transformation(y_test, train_scale$y[1], train_scale$y[2])
       
-      cat("range y_test:", range(y_test))
     }
     
   }
   
   if(is.null(keras_model_seq)){
     
-    N_layers <- length(layers$activation)
+    if(is.null(kernel_initializer))
+      kernel_initializer <- if(y_type == "continuous") "glorot_normal" else "glorot_uniform"
     
-    if(is.null(layers$kernel_initializer))
-      layers$kernel_initializer <- if(y_type == "continuous") "glorot_normal" else "glorot_uniform"
-    
-    for(i in 1:length(layers)){
-      if(length(layers[[i]]) == 1){
-        layers[[i]] <- rep(layers[[i]], N_layers)
-      }
-    }
-    
-    if(is.na(layers$units[N_layers]))
-      layers$units[N_layers] <- max(1, ncol(y_train))
-    
+    layers <- data.frame(row.names=paste0("layer", 1:N_layers))
+    layers$units <- 1
+    layers$units[N_layers] <- max(1, ncol(y_train))
+    layers$units[-N_layers] <- units
+    layers$activation <- activation
     if(y_type == "continuous")
       layers$activation[N_layers] <- "linear"
+    layers$dropout <- 0
+    layers$dropout[-N_layers] <- dropout 
+    layers$use_bias <- use_bias
+    layers$kernel_initializer <- kernel_initializer
+    layers$kernel_regularizer <- kernel_regularizer
+    layers$bias_regularizer <- bias_regularizer
+    layers$activity_regulizer <- activity_regularizer
     
-    penalty <- function(reg_type){
-      if(is.null(reg_type)) NULL else do.call(reg_type, list(0.01))
-    }
-    
+    if(verbose > 0) print(layers)
+  
     keras_model_seq <- keras_model_sequential() 
     for(i in 1:N_layers){
+      
       keras_model_seq <- if(i == 1){
-        layer_dense(keras_model_seq, units = layers$units[i], 
-                    activation = layers$activation[i], input_shape = c(P), 
+        layer_dense(keras_model_seq, input_shape = c(P), 
+                    units = layers$units[i], 
+                    activation = layers$activation[i], 
                     use_bias = layers$use_bias[i], 
                     kernel_initializer = layers$kernel_initializer[i],
                     kernel_regularizer = penalty(layers$kernel_regularizer[i]),
                     bias_regularizer = penalty(layers$bias_regularizer[i]),
-                    activity_regularizer = penalty(layers$activity_regularizer[i])
-                    )
+                    activity_regularizer = penalty(layers$activity_regularizer[i]))
       }else{
-        layer_dense(keras_model_seq, units = layers$units[i], activation = layers$activation[i], use_bias = layers$use_bias[i])
+        layer_dense(keras_model_seq, 
+                    units = layers$units[i], 
+                    activation = layers$activation[i], 
+                    use_bias = layers$use_bias[i], 
+                    kernel_initializer = layers$kernel_initializer[i],
+                    kernel_regularizer = penalty(layers$kernel_regularizer[i]),
+                    bias_regularizer = penalty(layers$bias_regularizer[i]),
+                    activity_regularizer = penalty(layers$activity_regularizer[i]))
       }
       if(i != N_layers)
         model <- layer_dropout(keras_model_seq, rate = layers$rate[i], seed = seed_list$seed)
@@ -392,7 +380,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       est <- data.frame(y = c(y_test, y_fit),
                         type = c(rep("y_test", length(y_test)), rep("predictions", length(y_fit))))
       if(verbose > 0) 
-        ggplot(est, aes(x=y, fill=type)) + geom_histogram() + labs(title="Holdout Data vs. Predictions")
+        ggplot(est, aes(x=y, fill=type)) + geom_histogram() + ggtitle("Holdout Data vs. Predictions")
       
       
       
@@ -443,5 +431,8 @@ z <- function(x, x_mean = NULL, x_sd = NULL){
   
 }
 
+penalty <- function(regularization_type, alpha = 0.01){
+  if(is.null(regularization_type)) NULL else do.call(regularization_type, list(alpha))
+}
 
 

@@ -1,7 +1,7 @@
 Package: kerasformula
 Type: Package
 Title: A High-Level R Interface for Neural Nets
-Version: 1.1.1
+Version: 1.5.0
 Author: Pete Mohanty [aut, cre]
 Authors@R: person("Pete", "Mohanty", role = c("aut", "cre"), email = "pete.mohanty@gmail.com")
 Maintainer: Pete Mohanty <pete.mohanty@gmail.com>
@@ -15,5 +15,6 @@ VignetteBuilder: knitr
 URL: https://github.com/rdrr1990/kerasformula
 BugReports: https://github.com/rdrr1990/kerasformula/issues
 Depends: keras, dplyr, Matrix
-Suggests: tensorflow, ggplot2, knitr
+Imports: ggplot2
+Suggests: tensorflow, knitr
 

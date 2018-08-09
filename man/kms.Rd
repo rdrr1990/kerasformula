@@ -4,9 +4,9 @@
 \alias{kms}
 \title{kms}
 \usage{
-kms(input_formula, data, keras_model_seq = NULL, units = c(256, 128),
-  activation = c("relu", "relu", "softmax"), dropout = c(0.4, 0.3),
-  use_bias = TRUE, kernel_initializer = NULL,
+kms(input_formula, data, keras_model_seq = NULL, N_layers = 3,
+  units = c(256, 128), activation = c("relu", "relu", "softmax"),
+  dropout = 0.4, use_bias = TRUE, kernel_initializer = NULL,
   kernel_regularizer = "regularizer_l1",
   bias_regularizer = "regularizer_l1",
   activity_regularizer = "regularizer_l1", pTraining = 0.8,
@@ -22,6 +22,8 @@ kms(input_formula, data, keras_model_seq = NULL, units = c(256, 128),
 \item{data}{a data.frame.}
 
 \item{keras_model_seq}{A compiled Keras sequential model. If non-NULL (NULL is the default), then bypasses the following `kms` parameters: N_layers, units, activation, dropout, use_bias, kernel_initializer, kernel_regularizer, bias_regularizer, activity_regularizer, loss, metrics, and optimizer.}
+
+\item{N_layers}{How many layers in the model? Default == 3. Subsequent parameters (units, activation, dropout, use_bias, kernel_initializer, kernel_regularizer, bias_regularizer, and activity_regularizer) may be inputted as vectors that are of length N_layers (or N_layers - 1 for units and dropout). The length of those vectors may also be length 1 or a multiple of N_layers (or N_layers - 1 for units and dropout).}
 
 \item{units}{How many units in each layer? The final number of units will be added based on whether regression or classification is being done. Should be length 1, length N_layers - 1, or something that can be repeated to form a length N_layers - 1 vector. Default is c(256, 128).}
 
@@ -64,8 +66,6 @@ kms(input_formula, data, keras_model_seq = NULL, units = c(256, 128),
 \item{verbose}{Default == 1. Setting to 0 disables progress bar and epoch-by-epoch plots (disabling them is recommended for knitting RMarkdowns if X11 not installed).}
 
 \item{...}{Additional parameters to be passsed to Matrix::sparse.model.matrix.}
-
-\item{N_layers}{How many layers in the model? Default == 3. Subsequent parameters (units, activation, dropout, use_bias, kernel_initializer, kernel_regularizer, bias_regularizer, and activity_regularizer) may be inputted as vectors that are of length N_layers (or N_layers - 1 for units and dropout). The length of those vectors may also be length 1 or a multiple of N_layers (or N_layers - 1 for units and dropout).}
 }
 \value{
 kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training. To extract or save weights, see https://tensorflow.rstudio.com/keras/reference/save_model_hdf5.html

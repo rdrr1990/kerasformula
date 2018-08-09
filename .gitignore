@@ -14,3 +14,5 @@ examples/*Rmd
 examples/*/*tar*
 examples/**/*html
 inst/doc/*html
+R/loss.R
+src/loss.py

@@ -10,3 +10,5 @@ mohanty_kerasformula.Rmd
 mohanty_kerasformula.md
 ^\.httr-oauth$
 R/scratchwork*.R
+R/loss.R
+src/loss.py
