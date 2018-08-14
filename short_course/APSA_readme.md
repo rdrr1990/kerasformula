@@ -25,7 +25,7 @@ install_keras()                     # run only once
 
 `install_keras()` is run only once on each computer (including if you use `https://rstudio.cloud`). `install_keras()` also provides high performance computing options (`GPU`) which will be briefly discusssed in the course but
 
--- **Windows users** If you have not already installed `Python 2.7`, please do so from [here](https://www.python.org/downloads/).
+-- **Windows users** If you have not already installed `Python 2.7`, please do so from [here](https://www.python.org/downloads/). Then proceed with `Mac` instructions.
 
 -- **Confirming** if all has gone well, you can now fit a neural net like so:
 
