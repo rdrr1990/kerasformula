@@ -54,7 +54,7 @@ P <- ncol(imdb_df) - 1
 colnames(imdb_df) <- c("y", paste0("x", 1:P))
 
 out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, 
-                 scale=NULL) # scale=NULL means leave data on original scale
+                 scale_continuous=NULL) # scale_continuous=NULL means leave data on original scale_continuous
 
 
 plot(out_dense$history)  # incredibly useful 
@@ -79,7 +79,7 @@ Test accuracy: 0.495283
 Pretty bad--that's a 'broken clock' model. Suppose want to add some more layers, say 6 total. The vector `units` is only length 5 since the final layer is determined by the type of outcome (one for regression, 2 or more for classification). Inputs, like `dropout` or `activation` function below, are repeated so that each layer is specified. (Each layer will have  a 40\% dropout rate and alternate between `relu` and `softmax`.)
 
 ```{r, eval = FALSE}
-out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, seed=123, scale=NULL,
+out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, seed=123, scale_continuous=NULL,
                  N_layers = 6,
                  units = c(1024, 512, 256, 128, 64), 
                  activation = c("relu", "softmax"),
@@ -114,7 +114,7 @@ k %>% compile(
   metrics = c('accuracy')
 )
 out_lstm <- kms("y ~ .", imdb_df[demo_sample, ], 
-                keras_model_seq = k, Nepochs = 10, seed = 12345, scale = NULL)
+                keras_model_seq = k, Nepochs = 10, seed = 12345, scale_continuous = NULL)
 out_lstm$confusion
 ```
 ```
@@ -150,7 +150,7 @@ keras_model_sequential() %>%
                 optimizer = 'adam', metrics = c('accuracy')) %>%
   
             kms(input_formula = "y ~ .", data = imdb_df[demo_sample, ], 
-                Nepochs = 10, seed = 12345, scale = NULL) -> 
+                Nepochs = 10, seed = 12345, scale_continuous = NULL) -> 
   out_lstm
 
 plot(out_lstm$history)
