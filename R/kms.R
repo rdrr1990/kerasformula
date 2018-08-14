@@ -57,7 +57,7 @@
 #' }
 #'  
 #' @author Pete Mohanty
-#' @importFrom keras to_categorical keras_model_sequential layer_dense layer_dropout compile fit evaluate predict_classes is_keras_available get_weights save_model_hdf5 save_model_weights_hdf5 use_session_with_seed
+#' @importFrom keras to_categorical keras_model_sequential layer_dense layer_dropout compile fit evaluate predict_classes is_keras_available get_weights save_model_hdf5 save_model_weights_hdf5 use_session_with_seed layer_embedding layer_flatten
 #' @importFrom Matrix sparse.model.matrix
 #' @importFrom stats as.formula cor formula model.matrix predict sd
 #' @importFrom dplyr n_distinct %>%
@@ -405,7 +405,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       est <- data.frame(y = c(y_test, y_fit),
                         type = c(rep("y_test", length(y_test)), rep("predictions", length(y_fit))))
       if(verbose > 0) 
-        ggplot(est, aes(x=y, fill=type)) + geom_histogram() + ggtitle("Holdout Data vs. Predictions")
+        ggplot(est, aes(x=~y, fill=~type)) + geom_histogram() + ggtitle("Holdout Data vs. Predictions")
       
       
       
