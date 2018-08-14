@@ -19,3 +19,4 @@ src/loss.py
 R/.DS_store
 R/lstm.R
 examples/.DS_Store
+short_course/APSA_readme.Rmd
