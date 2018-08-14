@@ -14,12 +14,12 @@
 #' @param kernel_regularizer Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.
 #' @param bias_regularizer Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.
 #' @param activity_regularizer Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.   
-#' @param embedding If input_dim and output_dim are both set to appropriate values, the first layer will be an embedding (lower dimensional representation of e.g. ranks of word counts). Note pad_sequences() may be used as part of the input_formula. Regularizer (matrix regularizer) may be set to NULL. See ?layer_embedding.
+#' @param embedding If TRUE, the first layer will be an embedding with the number of output dimensions determined by `units` (so to speak, that means there will really be N_layers + 1). Note input `kernel_regularizer` is passed on as the `embedding_regularizer`. Note pad_sequences() may be used as part of the input_formula and you may wish to set scale_continuous to NULL. See ?layer_embedding.
 #' @param pTraining Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).
 #' @param seed Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/. 
 #' @param validation_split Portion of data to be used for validating each epoch (i.e., portion of pTraining). To be passed to keras::fit. Default == 0.2. 
 #' @param Nepochs Number of epochs; default == 15. To be passed to keras::fit.  
-#' @param batch_size To be passed to keras::fit and keras::predict_classes. Default == 32. 
+#' @param batch_size Default batch size is 32 unless emedding == TRUE in which case batch size is 1. (Smaller eases memory issues but may affect ability of optimizer to find global minimum). To be passed to several functions library(keras) functions like fit(), predict_classes(), and layer_embedding(). If embedding==TRUE, number of training obs must be a multiple of batch size. 
 #' @param loss To be passed to keras::compile. Defaults to "binary_crossentropy", "categorical_crossentropy", or "mean_squared_error" based on input_formula and data.
 #' @param metrics Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to "mean_absolute_error" and "mean_absolute_percentage_error" for continuous and c("accuracy") for binary/categorical (as well whether whether examples are correctly classified in one of the top five most popular categories or not if the number of categories K > 20).  
 #' @param optimizer To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.
@@ -75,8 +75,8 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                 kernel_regularizer = "regularizer_l1",
                 bias_regularizer = "regularizer_l1",
                 activity_regularizer = "regularizer_l1",
-                embedding = list(input_dim = NULL, output_dim = NULL, regularizer = "regularizer_l1"),
-                pTraining = 0.8, validation_split = 0.2, Nepochs = 15, batch_size = 32, 
+                embedding = FALSE,
+                pTraining = 0.8, validation_split = 0.2, Nepochs = 15, batch_size = NULL, 
                 loss = NULL, metrics = NULL, optimizer = "optimizer_adam",
                 scale_continuous = "zero_one", drop_intercept=TRUE,
                 sparse_data = FALSE,
@@ -109,6 +109,8 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   colnames_x <- colnames(X)
   P <- ncol(X)
   N <- nrow(X)
+  
+  batch_size <- if(embedding) 1 else 32 # handles nuissance ... 
   
   if(verbose > 0) message("N: ", N, ", P: ", P, "\n\n")
     
@@ -292,8 +294,6 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     if(is.null(kernel_initializer))
       kernel_initializer <- if(y_type == "continuous") "glorot_normal" else "glorot_uniform"
     
-    has_embedding <- !is.null(embedding$input_dim) && !in.null(embedding$output_dim)
-    
     layers <- data.frame(row.names=paste0("layer", 1:N_layers))
     layers$units <- 1
     layers$units[N_layers] <- max(1, ncol(y_train))
@@ -308,43 +308,52 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     layers$kernel_regularizer <- kernel_regularizer
     layers$bias_regularizer <- bias_regularizer
     layers$activity_regulizer <- activity_regularizer
-    
+    layers$embedding <- NA
+    layers$embedding[1] <- embedding
+
     if(verbose > 0) print(layers)
   
     keras_model_seq <- keras_model_sequential() 
     
-    keras_model_seq <- if(has_embedding){
+    if(embedding){
       
-      layer_embedding(input_dim = embedding$input_dim,
-                      output_dim = embedding$output_dim,
-                      embeddings_regularizer = penalty(embedding$regularizer)
+      layer_embedding(keras_model_seq, 
+                      input_dim = (max(X_train) + 1),
+                      output_dim = layers$units[1],
+                      input_length = P,
+                      embeddings_regularizer = penalty(layers$kernel_regularizer[1]),
+                      activity_regularizer = penalty(layers$activity_regularizer[1]),
+                      batch_size = batch_size
                       )
+      layer_flatten(keras_model_seq)
+      layer_dropout(keras_model_seq, layers$dropout[1])
       
     }else{
       
-      layer_dense(keras_model_seq, input_shape = c(P), 
-                  units = layers$units[1], 
-                  activation = layers$activation[1], 
-                  use_bias = layers$use_bias[1], 
-                  kernel_initializer = layers$kernel_initializer[1],
-                  kernel_regularizer = penalty(layers$kernel_regularizer[1]),
-                  bias_regularizer = penalty(layers$bias_regularizer[1]),
-                  activity_regularizer = penalty(layers$activity_regularizer[1])) 
+        layer_dense(keras_model_seq, 
+                    input_shape = c(P), 
+                    units = layers$units[1], 
+                    activation = layers$activation[1], 
+                    use_bias = layers$use_bias[1], 
+                    kernel_initializer = layers$kernel_initializer[1],
+                    kernel_regularizer = penalty(layers$kernel_regularizer[1]),
+                    bias_regularizer = penalty(layers$bias_regularizer[1]),
+                    activity_regularizer = penalty(layers$activity_regularizer[1])) 
     }
     
-    start <- if(has_embedding) 1 else 2
+    start <- if(embedding) 2 else 1
     
     for(i in start:N_layers){
-
-      layer_dense(keras_model_seq, 
+      
+        layer_dense(keras_model_seq, 
                     units = layers$units[i], 
                     activation = layers$activation[i], 
                     use_bias = layers$use_bias[i], 
                     kernel_initializer = layers$kernel_initializer[i],
                     kernel_regularizer = penalty(layers$kernel_regularizer[i]),
                     bias_regularizer = penalty(layers$bias_regularizer[i]),
-                    activity_regularizer = penalty(layers$activity_regularizer[i]))
-      
+                    activity_regularizer = penalty(layers$activity_regularizer[i])) 
+
       if(i != N_layers)
         layer_dropout(keras_model_seq, rate = layers$rate[i], seed = seed_list$seed)
     }
@@ -368,7 +377,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
   )
   
   object <- list(history = history,
-                 input_formula = form, model = keras_model_seq, 
+                 input_formula = form, model = keras_model_seq, layers_overview = layers,
                  loss = loss, optimizer = optimizer, metrics = metrics,
                  N = N, P = P, K = n_distinct_y,
                  y_test = if(pTraining == 1) NULL else y[split == "test"],
@@ -380,7 +389,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
 
   if(pTraining < 1){
     
-    object[["evaluations"]] <- evaluate(keras_model_seq, X_test, y_test)
+    object[["evaluations"]] <- evaluate(keras_model_seq, X_test, y_test, batch_size = batch_size)
     
     if(y_type == "continuous"){
       

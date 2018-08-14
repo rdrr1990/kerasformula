@@ -37,15 +37,10 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 
 ## ---- eval = FALSE-------------------------------------------------------
 #  out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, seed=123, scale=NULL,
-#                   layers = list(units = c(512, 256, 128, NA),
-#                                 activation = c("softmax", "relu", "relu", "softmax"),
-#                                 dropout = c(0.75, 0.4, 0.3, NA),
-#                                 use_bias = TRUE,
-#                                 kernel_initializer = NULL,
-#                                 kernel_regularizer = "regularizer_l1",
-#                                 bias_regularizer = "regularizer_l1",
-#                                 activity_regularizer = "regularizer_l1"
-#                                 ))
+#                   N_layers = 6,
+#                   units = c(1024, 512, 256, 128, 64),
+#                   activation = c("relu", "softmax"),
+#                   dropout = 0.4)
 #  out_dense$confusion
 
 ## ---- eval = FALSE-------------------------------------------------------

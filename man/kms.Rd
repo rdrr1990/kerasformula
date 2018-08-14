@@ -9,13 +9,12 @@ kms(input_formula, data, keras_model_seq = NULL, N_layers = 3,
   dropout = 0.4, use_bias = TRUE, kernel_initializer = NULL,
   kernel_regularizer = "regularizer_l1",
   bias_regularizer = "regularizer_l1",
-  activity_regularizer = "regularizer_l1", embedding = list(input_dim =
-  NULL, output_dim = NULL, regularizer = "regularizer_l1"), pTraining = 0.8,
-  validation_split = 0.2, Nepochs = 15, batch_size = 32, loss = NULL,
-  metrics = NULL, optimizer = "optimizer_adam",
-  scale_continuous = "zero_one", drop_intercept = TRUE,
-  sparse_data = FALSE, seed = list(seed = NULL, disable_gpu = FALSE,
-  disable_parallel_cpu = FALSE), verbose = 1, ...)
+  activity_regularizer = "regularizer_l1", embedding = FALSE,
+  pTraining = 0.8, validation_split = 0.2, Nepochs = 15,
+  batch_size = NULL, loss = NULL, metrics = NULL,
+  optimizer = "optimizer_adam", scale_continuous = "zero_one",
+  drop_intercept = TRUE, sparse_data = FALSE, seed = list(seed = NULL,
+  disable_gpu = FALSE, disable_parallel_cpu = FALSE), verbose = 1, ...)
 }
 \arguments{
 \item{input_formula}{an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "mpg ~ cylinders". kms treats numeric data with more than two distinct values a continuous outcome for which a regression-style model is fit. Factors and character variables are classified; to force classification, "as.factor(cyl) ~ .".}
@@ -42,7 +41,7 @@ kms(input_formula, data, keras_model_seq = NULL, N_layers = 3,
 
 \item{activity_regularizer}{Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.}
 
-\item{embedding}{If input_dim and output_dim are both set to appropriate values, the first layer will be an embedding (lower dimensional representation of e.g. ranks of word counts). Note pad_sequences() may be used as part of the input_formula. Regularizer (matrix regularizer) may be set to NULL. See ?layer_embedding.}
+\item{embedding}{If TRUE, the first layer will be an embedding with the number of output dimensions determined by `units` (so to speak, that means there will really be N_layers + 1). Note input `kernel_regularizer` is passed on as the `embedding_regularizer`. Note pad_sequences() may be used as part of the input_formula and you may wish to set scale_continuous to NULL. See ?layer_embedding.}
 
 \item{pTraining}{Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).}
 
@@ -50,7 +49,7 @@ kms(input_formula, data, keras_model_seq = NULL, N_layers = 3,
 
 \item{Nepochs}{Number of epochs; default == 15. To be passed to keras::fit.}
 
-\item{batch_size}{To be passed to keras::fit and keras::predict_classes. Default == 32.}
+\item{batch_size}{Default batch size is 32 unless emedding == TRUE in which case batch size is 1. (Smaller eases memory issues but may affect ability of optimizer to find global minimum). To be passed to several functions library(keras) functions like fit(), predict_classes(), and layer_embedding(). If embedding==TRUE, number of training obs must be a multiple of batch size.}
 
 \item{loss}{To be passed to keras::compile. Defaults to "binary_crossentropy", "categorical_crossentropy", or "mean_squared_error" based on input_formula and data.}
 

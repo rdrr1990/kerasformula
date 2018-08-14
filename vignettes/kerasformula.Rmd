@@ -21,7 +21,7 @@ opts_chunk$set(comment = "", message = FALSE, warning = FALSE)
 ```
 
 
-The goal of this document is to introduce `kms` (as in `keras_model_sequential()`), a regression-style function which allows users to call `keras` neural nets with `R` `formula` objects (hence, library(`kerasformula`)). 
+The goal of this document is to introduce `kms` (as in `keras_model_sequential()`), a regression-style function which allows users to call `keras` neural nets with `R` `formula` objects (hence, library(`kerasformula`)). `kms()` enables users to easily crossvalidate a neural net and eases the coding burden which stems from setting the potentially large number of advanced hyperparameters.
 
 First, make sure that `keras` is properly configured:
 
@@ -76,19 +76,14 @@ cat('Test accuracy:', out_dense$evaluations$acc, "\n")
 Test accuracy: 0.495283 
 ```
 
-Pretty bad--that's a 'broken clock' model. Suppose want to add some more layers. Below find the default setting for `layers` appart from an additional softmax layer. Notice in `layers` below anything that appears only once is repeated for each layer as appropriate.
+Pretty bad--that's a 'broken clock' model. Suppose want to add some more layers, say 6 total. The vector `units` is only length 5 since the final layer is determined by the type of outcome (one for regression, 2 or more for classification). Inputs, like `dropout` or `activation` function below, are repeated so that each layer is specified. (Each layer will have  a 40\% dropout rate and alternate between `relu` and `softmax`.)
 
 ```{r, eval = FALSE}
 out_dense <- kms("y ~ .", data = imdb_df[demo_sample, ], Nepochs = 10, seed=123, scale=NULL,
-                 layers = list(units = c(512, 256, 128, NA), 
-                               activation = c("softmax", "relu", "relu", "softmax"),
-                               dropout = c(0.75, 0.4, 0.3, NA),
-                               use_bias = TRUE,
-                               kernel_initializer = NULL,
-                               kernel_regularizer = "regularizer_l1",
-                               bias_regularizer = "regularizer_l1",
-                               activity_regularizer = "regularizer_l1"
-                               ))
+                 N_layers = 6,
+                 units = c(1024, 512, 256, 128, 64), 
+                 activation = c("relu", "softmax"),
+                 dropout = 0.4)
 out_dense$confusion
 ```
 ```
@@ -162,5 +157,4 @@ plot(out_lstm$history)
 ```
 
 
-
-For another worked example starting with raw data (from `rtweet`) visit [here](https://github.com/rdrr1990/code/blob/master/kms.md).
+`kerasformula` is featured by [RStudio's Tensorflow blog](https://blogs.rstudio.com/tensorflow/posts/2018-01-24-analyzing-rtweet-data-with-kerasformula/). 

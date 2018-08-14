@@ -17,3 +17,5 @@ inst/doc/*html
 R/loss.R
 src/loss.py
 R/.DS_store
+R/lstm.R
+examples/.DS_Store
