@@ -35,7 +35,7 @@ install_keras()                     # run only once
 -- **Confirming** if all has gone well, you can now fit a neural net like so:
 
 ``` r
-hello_world <- kms(mpg ~ weight + cyl, mtcars)
+hello_world <- kms(mpg ~ wt + cyl, mtcars)
 ```
 
 -- **Troubleshooting** If that did not work, it could be that one or another dependency failed to install. In particular, check to see whether the `R` libraries `tensorflow`, `keras`, and `reticulate` are installed; install individually as need be. If everything installed but you are seeing a lengthy error message in `Python` (complaining in part about `None` or `NoneType`), `R` is probably attempting to access `Tensorflow` via `Python 3.x`. Assuming it's installed, load the library `reticulate` and provide the path to your copy of `Python 2.7` to the `use_python()` function ([documentation](https://rstudio.github.io/reticulate/reference/use_python.html)).
