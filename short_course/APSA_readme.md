@@ -5,6 +5,11 @@ Pete Mohanty
 
 Political scientists are increasingly interested in machine learning approaches such as neural networks. Neural networks offer predictive accuracy in spite of complex data generating processes and may also aid researchers interested in examining the scope conditions of inferential claims. Until recently, the programming requirements for neural networks have been much steeper for neural networks than for statistical techniques like regression (perhaps not unlike the early days of Bayesian Markov Chain Monte Carlo) and many of the best techniques were limited to `Python`. This workshop introduces the theory behind neural networks and shows how to build them in `R` using the library `kerasformula`. The workshop will provide political examples such as Twitter data and Congressional forecasting. These examples will also serve to highlight the comparative strengths and weaknesses of neural networks in comparison with classical statistical approaches. The library `kerasformula` is a high-level interface for `Keras` and `Tensorflow` in `R` that allows researchers to fit a model in as little as one line of code and which allows for a high degree of customization (shape and depth of the network, loss and activation function, etc.). The workshop will be conducted in an ‘active learning’ paradigm whereby mini-lectures will alternate with hands-on coding activities. Participants will be encouraged to bring a sample of their own data and to build a working prototype by the end of the day. Some familiarity with `R` and `RStudio` is assumed but participants need not be advanced coders.
 
+Data
+====
+
+Participants should have a sample of their own data in a `data.frame` which is clean enough to run a regression on. Alternatively, code will also be provided to quickly construct such a `data.frame` (similar to the data used in the slides).
+
 Software
 ========
 
