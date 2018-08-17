@@ -289,6 +289,8 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     
   }
   
+  layers <- NULL
+  
   if(is.null(keras_model_seq)){
     
     if(is.null(kernel_initializer))
