@@ -5,7 +5,7 @@
 #' @param object Optional fit object. confusion() assumes object contains holdout/vaidation data as `y_test` and the forecasts/classifications as `predictions` but alternative variable names can be specified with the input arguments by those names.
 #' @param y_test A vector of holdout/validation data or the name in object (if fit object provided but alternative variable name required).
 #' @param predictions A vector predictions or the name in object (if fit object provided but alternative variable name required).
-#' @param return_xtab Logical. If TRUE, returns confusion matrix, which is a crosstable with correct predictions on the diagonal (if all levels are predicted at least once). If FALSE, returns (rectangular) table with columns for percent correct, most common misclassification, second most common misclassification, and other predictions. Defaults to TRUE (crosstable-style) only if number of levels < 6.
+#' @param return_xtab Logical. If TRUE, returns confusion matrix, which is a crosstable with correct predictions on the diagonal (if all levels are predicted at least once). If FALSE, returns data.frame with columns for percent correct, most common misclassification, second most common misclassification, and other predictions. Only defaults to crosstable-style if y_test has fewer than six levels.
 #' @param digits Number of digits for proportions when return_xtab=FALSE; if NULL, no rounding is performed.
 #' @return confusion matrix or table as specified by return_xtab.
 #' #' @examples
@@ -20,7 +20,7 @@ confusion <- function(object = NULL, y_test = NULL, predictions = NULL, return_x
                     predictions = if(is.null(object)) predictions else object[[if(is.null(predictions)) "predictions" else predictions]],
                     stringsAsFactors = FALSE)
 
-  return_xtab <- if(is.null(return_xtab)) n_distinct(obj$predictions) < 6 else return_xtab 
+  return_xtab <- if(is.null(return_xtab)) n_distinct(obj$y_test) < 6 else return_xtab 
   
   if(return_xtab){
     

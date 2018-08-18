@@ -14,7 +14,7 @@ confusion(object = NULL, y_test = NULL, predictions = NULL,
 
 \item{predictions}{A vector predictions or the name in object (if fit object provided but alternative variable name required).}
 
-\item{return_xtab}{Logical. If TRUE, returns confusion matrix, which is a crosstable with correct predictions on the diagonal (if all levels are predicted at least once). If FALSE, returns (rectangular) table with columns for percent correct, most common misclassification, second most common misclassification, and other predictions. Defaults to TRUE (crosstable-style) only if number of levels < 6.}
+\item{return_xtab}{Logical. If TRUE, returns confusion matrix, which is a crosstable with correct predictions on the diagonal (if all levels are predicted at least once). If FALSE, returns data.frame with columns for percent correct, most common misclassification, second most common misclassification, and other predictions. Only defaults to crosstable-style if y_test has fewer than six levels.}
 
 \item{digits}{Number of digits for proportions when return_xtab=FALSE; if NULL, no rounding is performed.}
 }
