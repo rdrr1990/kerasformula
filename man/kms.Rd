@@ -79,7 +79,7 @@ A regression-style function call for keras_model_sequential() which uses formula
 if(is_keras_available()){
 
  mtcars$make <- unlist(lapply(strsplit(rownames(mtcars), " "), function(tokens) tokens[1]))
- company <- kms(make ~ ., mtcars, Nepochs = 1)
+ company <- kms(make ~ ., mtcars, Nepochs = 1, verbose=0)
  # out of sample accuracy
  pCorrect <- mean(company$y_test == company$predictions)
  pCorrect
@@ -90,7 +90,7 @@ if(is_keras_available()){
  company <- kms(make ~ ., mtcars,
                 units = c(256, 128), 
                 activation = c("relu", "relu", "softmax"),
-                dropout = c(0.4, 0.3),
+                dropout = 0.4,
                 use_bias = TRUE,
                 kernel_initializer = NULL,
                 kernel_regularizer = "regularizer_l1",

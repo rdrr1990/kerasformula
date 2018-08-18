@@ -14,3 +14,4 @@ R/loss.R
 src/loss.py
 R/lstm.R
 old/
+short_course/
