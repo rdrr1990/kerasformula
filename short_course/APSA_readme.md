@@ -35,7 +35,7 @@ install_keras()                     # run only once
 -- **Confirming** if all has gone well, you can now fit a neural net like so:
 
 ``` r
-hello_world <- kms(mpg ~ wt + cyl, mtcars)
+hello_world <- kms(mpg ~ weight + cyl, mtcars)
 ```
 
 -- **Troubleshooting** If that did not work, it could be that one or another dependency failed to install. In particular, check to see whether the `R` libraries `tensorflow`, `keras`, and `reticulate` are installed; install individually as need be. If everything installed but you are seeing a lengthy error message in `Python` (complaining in part about `None` or `NoneType`), `R` is probably attempting to access `Tensorflow` via `Python 3.x`. Assuming it's installed, load the library `reticulate` and provide the path to your copy of `Python 2.7` to the `use_python()` function ([documentation](https://rstudio.github.io/reticulate/reference/use_python.html)).
@@ -46,5 +46,7 @@ Suggested Reading
 -   Hastie, Tibshirani, and Friedman. Chapter 11 of [Elements of Statistical Learning](https://web.stanford.edu/~hastie/ElemStatLearn/printings/ESLII_print12.pdf).
 
 -   François Chollet and JJ Allaire. [Deep Learning with R](https://www.manning.com/books/deep-learning-with-r). Manning Publications Co., 2018. ( `kerasformula` is a wrapper for `keras`, authored by Allaire; `kerasformula` helps users with many of the settings described in that work. That link has some free chapter downloads; Chollet's book, [Deep Learning with Python](http://www.deeplearningitalia.com/wp-content/uploads/2017/12/Dropbox_Chollet.pdf) contains the same content apart from the syntax.)
+
+-   [Deep Learning](https://www.deeplearningbook.org/). 2016. Ian Goodfellow and Yoshua Bengio and Aaron Courville. MIT Press.
 
 -   Pete Mohanty. 2018. [Analyzing rtweet Data with kerasformula](https://blogs.rstudio.com/tensorflow/posts/2018-01-24-analyzing-rtweet-data-with-kerasformula/) on *Tensorflow for R Blog*. January 18. (Note the syntax for the main function differs slightly in that, in the old version of `kms`, the user inputs a list `layers` which contains the number of `units`, `activation` function, etc. but now `units` and `activation` are no longer nested.)
