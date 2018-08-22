@@ -50,3 +50,8 @@ Suggested Reading
 -   [Deep Learning](https://www.deeplearningbook.org/). 2016. Ian Goodfellow and Yoshua Bengio and Aaron Courville. MIT Press.
 
 -   Pete Mohanty. 2018. [Analyzing rtweet Data with kerasformula](https://blogs.rstudio.com/tensorflow/posts/2018-01-24-analyzing-rtweet-data-with-kerasformula/) on *Tensorflow for R Blog*. January 18. (Note the syntax for the main function differs slightly in that, in the old version of `kms`, the user inputs a list `layers` which contains the number of `units`, `activation` function, etc. but now `units` and `activation` are no longer nested.)
+
+Course Materials
+================
+
+Here is a link to the schedule for the day the APSA 2018 [short course](https://github.com/rdrr1990/kerasformula/blob/master/short_course/day_plan.md), which will link to additional materials as they are posted.
