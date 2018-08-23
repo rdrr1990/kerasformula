@@ -95,7 +95,8 @@ if(is_keras_available()){
                 kernel_initializer = NULL,
                 kernel_regularizer = "regularizer_l1",
                 bias_regularizer = "regularizer_l1",
-                activity_regularizer = "regularizer_l1"
+                activity_regularizer = "regularizer_l1",
+                Nepochs = 1, verbose=0
                 )
  # ?predict.kms_fit to see how to predict on newdata
 }else{

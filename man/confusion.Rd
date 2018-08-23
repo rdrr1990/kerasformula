@@ -27,7 +27,7 @@ Confusion matrix or (for larger number of levels) confusion table.
 \examples{
 mtcars$make <- unlist(lapply(strsplit(rownames(mtcars), " "), function(tokens) tokens[1]))
 company <- if(is_keras_available()){
-               kms(make ~ ., mtcars, verbose=0)
+               kms(make ~ ., mtcars, Nepochs=1, verbose=0)
            }else{
                  list(y_test = mtcars$make[1:5], 
                  predictions = sample(mtcars$make, 5))
