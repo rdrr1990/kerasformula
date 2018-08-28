@@ -22,7 +22,6 @@ This course requires that that the `R` library `kerasformula` (version 1.5.1 or 
 Open `R` or `RStudio` and enter the following into the `Console`:
 
 ``` r
-install.packages("RCurl")           # may be needed to download data from GitHub
 install.packages("tm")
 install.packages("kerasformula")
 library(kerasformula)

@@ -13,9 +13,9 @@ leads into Demo 1 ... walk through install (if need be); introduce data; demonst
 
 [Lecture 1 link](https://web.stanford.edu/~pmohanty/kerasformula_lecture1.pdf)
 
-### 10-10:30 Activity 1
+### 10-10:30 Lab 1
 
-'hello kerasformula' toy examples, participants answer quick questions in `activity1.Rmd` that highlight structure of input and output.
+'hello kerasformula' toy examples, participants answer quick questions in `Lab1.Rmd` that highlight structure of input and output.
 
 ### 10:30-10:45 Break
 
@@ -23,34 +23,32 @@ leads into Demo 1 ... walk through install (if need be); introduce data; demonst
 
 [Lecture 2 link](https://web.stanford.edu/~pmohanty/kerasformula_lecture2.pdf)
 
-### 11:15-Noon Activity 2
+### 11:15-Noon Lab 2
 
-Participants build their own neural net using their own data and answer short questions found in `activity2.Rmd` which prompts them to estimate several models, take notes on output, etc.
+Participants build their own neural net using their own data and answer short questions found in `Lab2.Rmd` which prompts them to estimate several models, take notes on output, etc.
 
 (Participants should have a sample of their own data in a `data.frame` which is clean enough to run a regression on. Alternatively, code will be provided to quickly construct such a `data.frame` too and which will be similar to the data used in the slides.)
 
 ### Noon-1 Lunch
 
-### 1-1:30 Lecture 3: Text as Data with kerasformula
+### 1-1:30 Lecture 3: Avoiding Overfitting with kerasformula
 
-[Lecture 3 link](https://web.stanford.edu/~pmohanty/kerasformula_lecture3.pdf)
-
-Data reduction of text counts/ranks via embedding...
-
-### 1:30-2 Activity 3
-
-Participants complete embedding worksheet (`activity3.Rmd`) using their own data or provided data (if latter more amendable to working with counts / ranks of text).
+### 1:30-2 Lab 3 `Lab4.Rmd` triaging against overfitting
 
 ### 2-2:15 Break
 
-### 2:15-3 Lecture 4: Advanced Neural Nets (CNNs, etc.)
+### 2:15-3:00 Lecture 4: Text as Data with kerasformula
 
-### 3-3:30 Demo: Coding in Keras for Multidimensional Data (e.g., images)
+Data reduction of text counts/ranks via embedding...
 
-### 3:30-4 Activity 4
+[Lecture 4 link](https://web.stanford.edu/~pmohanty/kerasformula_lecture3.pdf)
 
-`activity4.Rmd` will walk participants through coding advanced neural nets in `keras` (again using their choice of their own data or demo data).
+### 3:00-3:30 Lab 4
 
-### 4-4:15 Break
+Participants complete text as data worksheet with provided data (if latter more amendable to working with counts / ranks of text).
 
-### 4:15-5 Lecture 5: Promises and Pitfalls of Neural Nets for Political Research
+### 3:30-3:45 Break
+
+### 3:45-4:15 Lecture 5: Advanced Neural Nets in Keras
+
+### 4:15-5 Lecture 6 + Discussion: Promises and Pitfalls of Neural Nets for Political Research
