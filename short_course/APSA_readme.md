@@ -13,7 +13,7 @@ Participants should have a sample of their own data in a `data.frame` which is c
 Software
 ========
 
-This course requires that that the `R` library `kerasformula` (version 1.5.0 or higher) be installed, as well as it's depedencies. How much fuss that is depends a bit on your computer (whether it's Windows or Mac, what you've already installed, and so on). Please note, due to various compability issues, (legacy) `Python 2.7` is recommended, not (current) `Python 3.x`.
+This course requires that that the `R` library `kerasformula` (version 1.5.1 or higher) be installed, as well as it's depedencies. How much fuss that is depends a bit on your computer (whether it's Windows or Mac, what you've already installed, and so on). Please note, due to various compability issues, (legacy) `Python 2.7` is recommended, not (current) `Python 3.x`.
 
 -- **The Cloud** (fastest, simplest install). In your web browser, go to <https://rstudio.cloud> and make a free account and then click to start a new project and open `RStudio` in your browser. Proceed with **Mac Desktop** instructions
 
@@ -23,6 +23,7 @@ Open `R` or `RStudio` and enter the following into the `Console`:
 
 ``` r
 install.packages("RCurl")           # may be needed to download data from GitHub
+install.packages("tm")
 install.packages("kerasformula")
 library(kerasformula)
 install_keras()                     # run only once
@@ -39,6 +40,13 @@ hello_world <- kms(mpg ~ weight + cyl, mtcars)
 ```
 
 -- **Troubleshooting** If that did not work, it could be that one or another dependency failed to install. In particular, check to see whether the `R` libraries `tensorflow`, `keras`, and `reticulate` are installed; install individually as need be. If everything installed but you are seeing a lengthy error message in `Python` (complaining in part about `None` or `NoneType`), `R` is probably attempting to access `Tensorflow` via `Python 3.x`. Assuming it's installed, load the library `reticulate` and provide the path to your copy of `Python 2.7` to the `use_python()` function ([documentation](https://rstudio.github.io/reticulate/reference/use_python.html)).
+
+Data
+====
+
+Many of the examples rely on '3 million Russian tweet' data set available here: <https://github.com/fivethirtyeight/russian-troll-tweets/>
+
+You may wish to download the first `csv` in advance.
 
 Suggested Reading
 =================
