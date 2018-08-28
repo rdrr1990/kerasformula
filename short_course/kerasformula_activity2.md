@@ -46,29 +46,4 @@ out$evaluations$acc
 plot_confusion(out, out2, out3) # can take as many as you please...
 ```
 
-**Task** The above exercise is designed to highlight key elements of model design. K-folds cross-validation is arguably better suited to the task of model selection than CV. Currently this can be implemented in `kerasformula` as shown below. Suppose you wanted to that instead; run the code and then adapt it to run an additional model or two (called `m2` and `m3`). Which one offers the best fit?
-
-``` r
-m1 <- "account_category ~ following + followers + language + author + retweet"
-
-N_folds <- 5
-folds <- sample(N_folds, nrow(troll_tweets), replace=TRUE)
-
-m1_train <- list()
-m1_test <- list()
-
-for(i in 1:N_folds){
-  
-  m1_train[[paste0("fold_", i)]] <- kms(m1, troll_tweets[folds != i, ], units=3, Nepochs = 8,
-                                     pTraining = 1, validation_split = 0, seed = i)
-  
-  m1_test[[paste0("fold_", i)]] <- predict(m1_train[[paste0("fold_", i)]], 
-                                        troll_tweets[folds == i, ])
-}
-
-m1_test$fold_1$accuracy
-m1_test$fold_2$accuracy
-m1_test$fold_3$accuracy
-m1_test$fold_4$accuracy
-m1_test$fold_5$accuracy
-```
+**Note** The above exercise is designed to highlight key elements of model design. K-folds cross-validation is arguably better suited to the task of model selection than CV. We will discuss kcv in a bit...

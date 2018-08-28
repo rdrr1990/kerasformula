@@ -11,6 +11,8 @@ The short course will take place in Hynes 303. The schedule is of course subject
 
 leads into Demo 1 ... walk through install (if need be); introduce data; demonstrate basic of `kerasformula` functionality
 
+[Lecture 1 link](https://web.stanford.edu/~pmohanty/kerasformula_lecture1.pdf)
+
 ### 10-10:30 Activity 1
 
 'hello kerasformula' toy examples, participants answer quick questions in `activity1.Rmd` that highlight structure of input and output.
@@ -18,6 +20,8 @@ leads into Demo 1 ... walk through install (if need be); introduce data; demonst
 ### 10:30-10:45 Break
 
 ### 10:45-11:15 Lecture 2: Key Elements of Neural Nets
+
+[Lecture 2 link](https://web.stanford.edu/~pmohanty/kerasformula_lecture2.pdf)
 
 ### 11:15-Noon Activity 2
 
@@ -27,7 +31,9 @@ Participants build their own neural net using their own data and answer short qu
 
 ### Noon-1 Lunch
 
-### 1-1:30 Lecture 3: Pre-processing
+### 1-1:30 Lecture 3: Text as Data with kerasformula
+
+[Lecture 3 link](https://web.stanford.edu/~pmohanty/kerasformula_lecture3.pdf)
 
 Data reduction of text counts/ranks via embedding...
 
