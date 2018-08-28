@@ -57,7 +57,7 @@ kms(input_formula, data, keras_model_seq = NULL, N_layers = 3,
 
 \item{optimizer}{To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.}
 
-\item{scale_continuous}{Function to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = zero_one' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.}
+\item{scale_continuous}{How to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = 'zero_one'' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.}
 
 \item{drop_intercept}{TRUE by default.}
 
