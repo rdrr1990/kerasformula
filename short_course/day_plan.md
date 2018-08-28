@@ -7,21 +7,19 @@ The short course will take place in Hynes 303. The schedule is of course subject
 
 ### 9-9:15 Meet & Greet
 
-### 9:15-9:45 Lecture 1: Overview & Learning Goals
+### 9:15-10 Lecture 1: Overview & Learning Goals
 
-### 9:45-10 Demo 1
+leads into Demo 1 ... walk through install (if need be); introduce data; demonstrate basic of `kerasformula` functionality
 
-Walk through install if need be, demonstrate basic of `kerasformula` functionality
-
-### 9:45-10:15 Activity 1
+### 10-10:30 Activity 1
 
 'hello kerasformula' toy examples, participants answer quick questions in `activity1.Rmd` that highlight structure of input and output.
 
-### 10:15-10:30 Break
+### 10:30-10:45 Break
 
-### 10:30-11 Lecture 2: Key Features of Neural Nets
+### 10:45-11:15 Lecture 2: Key Elements of Neural Nets
 
-### 11-Noon Activity 2
+### 11:15-Noon Activity 2
 
 Participants build their own neural net using their own data and answer short questions found in `activity2.Rmd` which prompts them to estimate several models, take notes on output, etc.
 
@@ -41,7 +39,7 @@ Participants complete embedding worksheet (`activity3.Rmd`) using their own data
 
 ### 2:15-3 Lecture 4: Advanced Neural Nets (CNNs, etc.)
 
-### 3-3:30 Demo 2: Coding in Keras for Multidimensional Data (e.g., images)
+### 3-3:30 Demo: Coding in Keras for Multidimensional Data (e.g., images)
 
 ### 3:30-4 Activity 4
 
