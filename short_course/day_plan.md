@@ -13,7 +13,7 @@ The short course will take place in Hynes 303. The schedule is of course subject
 
 Walk through install if need be, demonstrate basic of `kerasformula` functionality
 
-### 9:45-10:15 Activity 1
+### 10-10:15 Activity 1
 
 'hello kerasformula' toy examples, participants answer quick questions in `activity1.Rmd` that highlight structure of input and output.
 
