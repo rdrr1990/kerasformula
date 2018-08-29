@@ -93,6 +93,7 @@ confusion <- function(object = NULL, y_test = NULL, predictions = NULL, return_x
 #' @param return_ggplot Default FALSE (if TRUE, returns the ggplot object for further customization, etc.).
 #' @param title ggplot title
 #' @param subtitle ggplot subtitle
+#' @param position Position adjustment, either as a string, or the result of a call to a position adjustment function
 #' @return (optional) ggplot. set return_ggplot=TRUE
 #' @examples 
 #' 
@@ -115,7 +116,7 @@ confusion <- function(object = NULL, y_test = NULL, predictions = NULL, return_x
 #' }
 #' @importFrom ggplot2 element_text geom_point labs theme theme_minimal ylim
 #' @export
-plot_confusion <- function(..., display = TRUE, return_ggplot = FALSE, title="", subtitle=""){
+plot_confusion <- function(..., display = TRUE, return_ggplot = FALSE, title="", subtitle="", position="identity"){
   
   args <- list(...)
   if(unique(lapply(args, class)) != "kms_fit")
@@ -142,7 +143,7 @@ plot_confusion <- function(..., display = TRUE, return_ggplot = FALSE, title="",
   label <- pCorrect <- Model <- N <- NULL
   
   g <- ggplot(cf, aes(x =label, y =pCorrect, col=Model, size=N)) + theme_minimal() + 
-    geom_point() + theme(axis.text.x = element_text(angle = 70, hjust = 1)) + 
+    geom_point(position = position) + theme(axis.text.x = element_text(angle = 70, hjust = 1)) + 
     ylim(c(0,1)) + labs(y = "Proportion Correct\n(out of sample)", x="Model Comparison",
                         title=title, subtitle=subtitle) 
   
