@@ -49,7 +49,7 @@ Data reduction of text counts/ranks via embedding with troll tweets as data...
 
 ### 3:00-3:30 Lab 4: Congressional Text as Data
 
-Participants complete text as data [lab4.md](https://github.com/rdrr1990/kerasformula/blob/master/short_course/kerasformula_lab1.md) with provided data (if latter more amendable to working with counts / ranks of text).
+Participants complete text as data [lab4.md](https://github.com/rdrr1990/kerasformula/blob/master/short_course/kerasformula_lab4.md) with provided data (if latter more amendable to working with counts / ranks of text).
 
 ### 3:30-3:45 Break
 
