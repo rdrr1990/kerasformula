@@ -5,7 +5,7 @@
 \title{plot_confusion}
 \usage{
 plot_confusion(..., display = TRUE, return_ggplot = FALSE, title = "",
-  subtitle = "", position = "identity")
+  subtitle = "", position = "identity", alpha = 1)
 }
 \arguments{
 \item{...}{kms_fit objects. (For each, object$y_test must be binary or categorical.)}
@@ -19,6 +19,8 @@ plot_confusion(..., display = TRUE, return_ggplot = FALSE, title = "",
 \item{subtitle}{ggplot subtitle}
 
 \item{position}{Position adjustment, either as a string, or the result of a call to a position adjustment function}
+
+\item{alpha}{Transparency of points, between 0 and 1}
 }
 \value{
 (optional) ggplot. set return_ggplot=TRUE
