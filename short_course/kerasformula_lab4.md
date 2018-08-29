@@ -1,9 +1,9 @@
-Activity 4: Congressional Text as Data
+Lab 4: Congressional Text as Data
 ================
 Pete Mohanty
 8/29/2018
 
-**Activities**: You will be asked to complete several activities throughout the day. There are several questions that you should answer as you go. You may be asked some questions about concepts which haven't been introduced yet--that's fine, just do your best to make some notes and they'll be covered soon. Activities are best done with your neighbor but be sure to write your own code and make your own notes too. Examples are meant to run in under a minute; if they are taking much longer, stop and subset the data.
+**Labs**: You will be asked to complete several activities throughout the day. There are several questions that you should answer as you go. You may be asked some questions about concepts which haven't been introduced yet--that's fine, just do your best to make some notes and they'll be covered soon. Activities are best done with your neighbor but be sure to write your own code and make your own notes too. Examples are meant to run in under a minute; if they are taking much longer, stop and subset the data.
 
 **Goal**: Fit a model classifying Congressional immigration votes using elements of the text as features.
 

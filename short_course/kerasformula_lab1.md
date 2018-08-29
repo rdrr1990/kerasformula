@@ -1,9 +1,9 @@
-Activity 1
+Lab 1
 ================
 Pete Mohanty
 8/29/2018
 
-**Activities**: You will be asked to complete several activities throughout the day. There are several questions that you should answer as you go. You may be asked some questions about concepts which haven't been introduced yet--that's fine, just do your best to make some notes and they'll be covered soon. Activities are best done with your neighbor but be sure to write your own code and make your own notes too. Examples are meant to run in under a minute; if they are taking much longer, stop and subset the data.
+**Labs**: You will be asked to complete several activities throughout the day. There are several questions that you should answer as you go. You may be asked some questions about concepts which haven't been introduced yet--that's fine, just do your best to make some notes and they'll be covered soon. Activities are best done with your neighbor but be sure to write your own code and make your own notes too. Examples are meant to run in under a minute; if they are taking much longer, stop and subset the data.
 
 **Goal**: This is a short activity designed to get familar with the input and output of `kms` (which abbreviates `keras_model_sequential`).
 
@@ -59,7 +59,7 @@ plot_confusion(out, out2)
 **Q8** In general, practioners consider it important to scale the data. By default, `kerasformula` scales continuous variables on \[0, 1\]. But `kms(..., scale_continuous = "z")` standardizes (i.e., to Normal(0,1)) and `kms(..., scale_continuous = NULL)` leaves the data on its original scale. Which approach works best on this data?
 
 ``` r
-plot_confusion(out, out_z, out) # can take as many as you please...
+plot_confusion(out, out_z, out_raw) # can take as many as you please...
 ```
 
 In any remaining time, check whether the results are stable by changing the seed.
