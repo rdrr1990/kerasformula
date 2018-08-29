@@ -58,6 +58,8 @@ Suggested Reading
 
 -   Pete Mohanty. 2018. [Analyzing rtweet Data with kerasformula](https://blogs.rstudio.com/tensorflow/posts/2018-01-24-analyzing-rtweet-data-with-kerasformula/) on *Tensorflow for R Blog*. January 18. (Note the syntax for the main function differs slightly in that, in the old version of `kms`, the user inputs a list `layers` which contains the number of `units`, `activation` function, etc. but now `units` and `activation` are no longer nested.)
 
+-   Anastasopoulos et. al. 2017. "Political image analysis with deep neural." *Political Analysis*. [link](https://scholar.harvard.edu/files/janastas/files/neural-networks-preprint.pdf).
+
 Course Materials
 ================
 
