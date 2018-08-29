@@ -3,7 +3,7 @@ Plan for Day
 Pete
 8/16/2018
 
-The short course will take place in Hynes 303. The schedule is of course subject to change but this should be pretty close.
+The short course will take place in Hynes 303. The schedule is of course subject to change but this should (now really) be pretty close.
 
 ### 9-9:15 Meet & Greet
 
