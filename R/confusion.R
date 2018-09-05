@@ -120,33 +120,85 @@ confusion <- function(object = NULL, y_test = NULL, predictions = NULL, return_x
 plot_confusion <- function(..., display = TRUE, return_ggplot = FALSE, title="", subtitle="", position="identity", alpha = 1){
   
   args <- list(...)
-  if(unique(lapply(args, class)) != "kms_fit")
-    stop("All objects must be kms_fit (i.e., output from kerasformula::kms()).")
+  object_class <- if(length(args) == 1) class(args[[1]]) else unique(lapply(args, class))
+  if(length(object_class) > 1)
+    stop("All objects must be either kms_fit (i.e., output from kerasformula::kms()) or kms_kcv_fit (i.e., output from kerasformula::kms_kcv()) but not both.")
   
-  model <- as.character(as.list(substitute(list(...)))[-1L])   
+  model <- as.character(as.list(substitute(list(...)))[-1L])  
   y_type <- c()
-  
   confusions <- list()
-  for(i in 1:length(args)){
-    
-    confusions[[i]] <- confusion(args[[i]], return_xtab = FALSE)
-    confusions[[i]][["Model"]] <- model[i]
-    y_type[i] <- args[[i]][["y_type"]]
-    
-  }  
-  
-  if("continuous" %in% unique(y_type))
-    stop("plot_confusion() is intended for categorical variables.")
-  
-  cf <- do.call(rbind, confusions)
   
   # circumventing CRAN check 
-  label <- pCorrect <- Model <- N <- NULL
+  label <- pCorrect <- Model <- N <- Fold <- NULL
   
-  g <- ggplot(cf, aes(x =label, y =pCorrect, col=Model, size=N)) + theme_minimal() + 
-    geom_point(position = position, alpha = alpha) + theme(axis.text.x = element_text(angle = 70, hjust = 1)) + 
-    ylim(c(0,1)) + labs(y = "Proportion Correct\n(out of sample)", x="Model Comparison",
-                        title=title, subtitle=subtitle) 
+  if(object_class == "kms_fit"){
+    
+    for(i in 1:length(args)){
+      
+      confusions[[i]] <- confusion(args[[i]], return_xtab = FALSE)
+      confusions[[i]][["Model"]] <- model[i]
+      y_type[i] <- args[[i]][["y_type"]]
+      
+    }  
+    
+    if("continuous" %in% unique(y_type))
+      stop("plot_confusion() is intended for categorical variables.")
+    
+    cf <- do.call(rbind, confusions)
+    
+    g <- ggplot(cf, aes(x = label, y = pCorrect, col = Model, size = N)) +
+      theme_minimal() + 
+      geom_point(position = position, alpha = alpha) + 
+      theme(axis.text.x = element_text(angle = 70, hjust = 1)) + 
+      ylim(c(0,1)) + 
+      labs(y = "Proportion Correct\n(out of sample)", 
+           x = "Model Comparison", title = title, subtitle = subtitle) 
+    
+  }else{
+    if(object_class == "kms_kcv_fit"){
+      
+      k_folds <- c()
+      mk <- 1
+
+      for(m in 1:length(args)){
+        
+        for(k in 1:args[[m]][["k_folds"]]){
+          
+          confusions[[paste0("out", mk)]] <- confusion(y_test = args[[m]][[paste0("test_f", k)]][["y_test"]],
+                                       predictions = args[[m]][[paste0("test_f", k)]][["fit"]],
+                                       return_xtab = FALSE)
+          confusions[[paste0("out", mk)]][["Fold"]] <- k
+          confusions[[paste0("out", mk)]][["Model"]] <- model[m]
+          mk <- mk + 1
+          
+        }
+        
+        y_type[m] <- args[[m]][["train_f1"]][["y_type"]]
+        k_folds[m] <- args[[m]][["k_folds"]]
+      }  
+      
+      if("continuous" %in% unique(y_type))
+        stop("plot_confusion() is intended for categorical variables.")
+      
+      if(length(unique(k_folds)) > 1)
+        stop("plot_confusion, when used on kms_kcv_fit objects, is intended to compare models that were fit against the same test/train splits but the number of folds differs.")
+      
+      cf <- do.call(rbind, confusions)
+      cf$Fold <- as.factor(cf$Fold)
+      
+      g <- ggplot(cf, aes(x = label, y = pCorrect, col = Model, size = N, shape = Fold)) +
+        theme_minimal() + 
+        geom_point(position = position, alpha = alpha) + 
+        theme(axis.text.x = element_text(angle = 70, hjust = 1)) + 
+        ylim(c(0,1)) + 
+        labs(y = "Proportion Correct\n(out of sample)", 
+             x = "Model Comparison", title = title, subtitle = subtitle) 
+      
+      
+    }else{
+      stop("All objects must be either kms_fit (i.e., output from kerasformula::kms()) or kms_kcv_fit (i.e., output from kerasformula::kms_kcv()) but not both.")
+    }
+  }
   
   if(display) print(g)
   if(return_ggplot) return(g) 

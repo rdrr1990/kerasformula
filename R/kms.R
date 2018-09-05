@@ -16,7 +16,6 @@
 #' @param activity_regularizer Must be precisely either "regularizer_l1", "regularizer_l2", or "regulizer_l1_l2". Default: "regularizer_l1". Should be length 1, length N_layers, or something that can be repeated to form a length N_layers vector.   
 #' @param embedding If TRUE, the first layer will be an embedding with the number of output dimensions determined by `units` (so to speak, that means there will really be N_layers + 1). Note input `kernel_regularizer` is passed on as the `embedding_regularizer`. Note pad_sequences() may be used as part of the input_formula and you may wish to set scale_continuous to NULL. See ?layer_embedding.
 #' @param pTraining Proportion of the data to be used for training the model;  0 =< pTraining < 1. By default, pTraining == 0.8. Other observations used only postestimation (e.g., confusion matrix).
-#' @param seed Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/. 
 #' @param validation_split Portion of data to be used for validating each epoch (i.e., portion of pTraining). To be passed to keras::fit. Default == 0.2. 
 #' @param Nepochs Number of epochs; default == 15. To be passed to keras::fit.  
 #' @param batch_size Default batch size is 32 unless emedding == TRUE in which case batch size is 1. (Smaller eases memory issues but may affect ability of optimizer to find global minimum). To be passed to several functions library(keras) functions like fit(), predict_classes(), and layer_embedding(). If embedding==TRUE, number of training obs must be a multiple of batch size. 
@@ -26,6 +25,7 @@
 #' @param scale_continuous How to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = 'zero_one'' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.
 #' @param sparse_data Default == FALSE. If TRUE, X is constructed by sparse.model.matrix() instead of model.matrix(). Recommended to improve memory usage if there are a large number of categorical variables or a few categorical variables with a large number of levels. May compromise speed, particularly if X is mostly numeric.
 #' @param drop_intercept TRUE by default.     
+#' @param seed Integer or list containing seed to be passed to the sources of variation: R, Python's Numpy, and Tensorflow. If seed is NULL, automatically generated. Note setting seed ensures data will be partitioned in the same way but to ensure identical results, set disable_gpu = TRUE and disable_parallel_cpu = TRUE. Wrapper for use_session_with_seed(), which is to be called before compiling by the user if a compiled Keras model is passed into kms. See also see https://stackoverflow.com/questions/42022950/. 
 #' @param verbose Default == 1. Setting to 0 disables progress bar and epoch-by-epoch plots (disabling them is recommended for knitting RMarkdowns if X11 not installed).
 #' @param ... Additional parameters to be passsed to Matrix::sparse.model.matrix.
 #' @return kms_fit object. A list containing model, predictions, evaluations, as well as other details like how the data were split into testing and training. To extract or save weights, see https://tensorflow.rstudio.com/keras/reference/save_model_hdf5.html 
@@ -126,10 +126,8 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     } 
   if(is.null(seed_list$seed)){
     
-      a <- as.numeric(format(Sys.time(), "%OS"))
-      b <- 10^6*as.numeric(format(Sys.time(), "%OS6"))
-      seed_list$seed <- sample(a:b, size=1)
-      
+      seed_list$seed <- sample(2^30, 1)
+      # py Seed must be between 0 and 2**32 - 1 but avoiding R integer coercion issues with larger than 2^30    
   } 
   
   if(is.null(keras_model_seq)){

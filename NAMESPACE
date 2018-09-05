@@ -3,6 +3,7 @@
 S3method(predict,kms_fit)
 export(confusion)
 export(kms)
+export(kms_kcv)
 export(plot_confusion)
 importFrom(Matrix,Matrix)
 importFrom(Matrix,sparse.model.matrix)
