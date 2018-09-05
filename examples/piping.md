@@ -10,9 +10,9 @@ library(kerasformula)
 library(dplyr)
 
 iris %>% 
-    kms(input_formula = "Species ~ .", units=4, seed=123, verbose=0) -> 
+    kms(input_formula = "Species ~ .", units=2, seed=123, verbose=0) -> 
 out 
 out %>% plot_confusion
 ```
 
-![](piping_files/figure-markdown_github/unnamed-chunk-1-1.png)
+![](piping_files/figure-markdown_github/pipe_plot_confusion-1.png)
