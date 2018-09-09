@@ -355,7 +355,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                     bias_regularizer = penalty(layers$bias_regularizer[i]),
                     activity_regularizer = penalty(layers$activity_regularizer[i])) 
 
-      if(i != N_layers)
+      if(i != N_layers && layers$rate[i] > 0)
         layer_dropout(keras_model_seq, rate = layers$rate[i], seed = seed_list$seed)
     }
     
