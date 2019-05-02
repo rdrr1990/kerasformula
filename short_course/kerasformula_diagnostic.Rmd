@@ -1,0 +1,61 @@
+---
+title: "compatability check for kerasformula"
+author: "Pete Mohanty"
+date: "5/2/2019"
+output: github_document
+---
+
+This document attempts to fit a simple neural net using `kerasformula`. It also displays a number of version checks on `kerasformula` and its dependencies both in `R` and in `Python`. This document is intended to knit whether or not the model can be fit successfully. To run this code on your machine, [click here](https://raw.githubusercontent.com/rdrr1990/kerasformula/master/short_course/kerasformula_diagnostic.Rmd).
+
+```{r setup}
+if(!require(keras)) install.packages(keras)
+if(!require(kerasformula)) install.packages(kerasformula)
+library(keras)
+if(!is_keras_available()) install_keras()
+keras_installed <- is_keras_available()
+```
+
+
+```{r example, fig.height=3}
+if(keras_installed){
+  library(kerasformula)
+  tried <- try(out <- kms(Species ~ ., iris, verbose=0))
+  if(!inherits(tried, "try-error")) plot_confusion(out)
+}else{
+  message("keras did not install properly.\n")
+}
+
+```
+
+```{r}
+system("which python > python_path.txt")
+python_path <- readLines("python_path.txt")
+python_path
+```
+
+If that path is correct, it should be set in two different ways. Making `changing_settings=TRUE` would accomplish that. 
+
+```{r}
+if(!require(reticulate)) install.packages(reticulate)
+library(reticulate)
+
+change_settings <- FALSE
+
+if(change_settings){
+  
+  System.setenv(TENSORFLOW_PYTHON=python_path)
+  use_python(python_path)
+    
+}
+```
+The Python path should appear for each of these key libraries...
+```{r}
+py_discover_config("tensorflow")
+py_discover_config("numpy")
+py_discover_config("keras")
+```
+
+```{r}
+sessionInfo()
+
+```
