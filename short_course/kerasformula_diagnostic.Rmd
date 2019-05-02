@@ -5,7 +5,7 @@ date: "5/2/2019"
 output: github_document
 ---
 
-This document attempts to fit a simple neural net using `kerasformula`. It also displays a number of version checks on `kerasformula` and its dependencies both in `R` and in `Python`. This document is intended to knit whether or not the model can be fit successfully. To run this code on your machine, [click here](https://raw.githubusercontent.com/rdrr1990/kerasformula/master/short_course/kerasformula_diagnostic.Rmd).
+This document attempts to fit a simple neural net using `kerasformula`. It also displays a number of version checks on `kerasformula` and its dependencies both in `R` and in `Python`. This document is intended to knit whether or not the model can be fit successfully. To run this code on your machine, [click here](https://github.com/rdrr1990/kerasformula/blob/master/short_course/kerasformula_diagnostic.Rmd).
 
 ```{r setup}
 if(!require(keras)) install.packages(keras)
