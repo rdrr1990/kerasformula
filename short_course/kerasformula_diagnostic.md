@@ -42,7 +42,7 @@ keras_installed <- is_keras_available()
 if(keras_installed){
   library(kerasformula)
   tried <- try(out <- kms(Species ~ ., iris, verbose=0))
-  if(!inherits(tried, "try-error")) plot_confusion(out)
+  if(!inherits(tried, "try-error")) plot_confusion(out) else("Model failed to estimate.\n\n\n")
 }else{
   message("keras did not install properly.\n")
 }
