@@ -4,8 +4,8 @@
 \alias{predict.kms_fit}
 \title{predict.kms_fit}
 \usage{
-\method{predict}{kms_fit}(object, newdata, batch_size = 32, verbose = 0,
-  ...)
+\method{predict}{kms_fit}(object, newdata, batch_size = 32,
+  verbose = 0, ...)
 }
 \arguments{
 \item{object}{output from kms()}

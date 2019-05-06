@@ -295,7 +295,12 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     if(is.null(kernel_initializer))
       kernel_initializer <- if(y_type == "continuous") "glorot_normal" else "glorot_uniform"
     
-    layers <- data.frame(row.names=paste0("layer", 1:N_layers))
+    layers <- data.frame(row.names = paste0("layer", 1:N_layers))
+    layers$use_bias <- use_bias
+    layers$kernel_initializer <- kernel_initializer
+    layers$kernel_regularizer <- kernel_regularizer
+    layers$bias_regularizer <- bias_regularizer
+    layers$activity_regularizer <- activity_regularizer
     layers$units <- 1
     layers$units[N_layers] <- max(1, ncol(y_train))
     layers$units[-N_layers] <- units
@@ -304,11 +309,6 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
       layers$activation[N_layers] <- "linear"
     layers$dropout <- 0
     layers$dropout[-N_layers] <- dropout 
-    layers$use_bias <- use_bias
-    layers$kernel_initializer <- kernel_initializer
-    layers$kernel_regularizer <- kernel_regularizer
-    layers$bias_regularizer <- bias_regularizer
-    layers$activity_regulizer <- activity_regularizer
     layers$embedding <- NA
     layers$embedding[1] <- embedding
 
@@ -355,8 +355,9 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                     bias_regularizer = penalty(layers$bias_regularizer[i]),
                     activity_regularizer = penalty(layers$activity_regularizer[i])) 
 
-      if(i != N_layers && layers$rate[i] > 0)
-        layer_dropout(keras_model_seq, rate = layers$rate[i], seed = seed_list$seed)
+       if(!is.na(layers$dropout[i]))
+          if(layers$dropout[i] > 0)
+            layer_dropout(keras_model_seq, rate = layers$dropout[i], seed = seed_list$seed)
     }
     
     keras_model_seq %>% compile(

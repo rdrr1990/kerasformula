@@ -9,11 +9,12 @@ kms_kcv(input_formula, data, keras_model_seq = NULL, N_layers = 3,
   dropout = 0.4, use_bias = TRUE, kernel_initializer = NULL,
   kernel_regularizer = "regularizer_l1",
   bias_regularizer = "regularizer_l1",
-  activity_regularizer = "regularizer_l1", embedding = FALSE, k_folds = 5,
-  Nepochs = 15, batch_size = NULL, loss = NULL, metrics = NULL,
-  optimizer = "optimizer_adam", scale_continuous = "zero_one",
-  drop_intercept = TRUE, sparse_data = FALSE, seed = list(seed = NULL,
-  disable_gpu = FALSE, disable_parallel_cpu = FALSE), verbose = 1, ...)
+  activity_regularizer = "regularizer_l1", embedding = FALSE,
+  k_folds = 5, Nepochs = 15, batch_size = NULL, loss = NULL,
+  metrics = NULL, optimizer = "optimizer_adam",
+  scale_continuous = "zero_one", drop_intercept = TRUE,
+  sparse_data = FALSE, seed = list(seed = NULL, disable_gpu = FALSE,
+  disable_parallel_cpu = FALSE), verbose = 1, ...)
 }
 \arguments{
 \item{input_formula}{an object of class "formula" (or one coerceable to a formula): a symbolic description of the keras inputs. "mpg ~ cylinders". kms treats numeric data with more than two distinct values a continuous outcome for which a regression-style model is fit. Factors and character variables are classified; to force classification, "as.factor(cyl) ~ .".}
