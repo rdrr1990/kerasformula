@@ -81,4 +81,4 @@ loaded via a namespace (and not attached):
 [21] base64enc_0.1-3   zeallot_0.1.0     glue_1.3.1        compiler_3.6.0   
 [25] pillar_1.3.1      generics_0.0.2    scales_1.0.0      reticulate_1.12  
 [29] jsonlite_1.6      pkgconfig_2.0.2  
-``
+```
