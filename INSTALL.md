@@ -9,7 +9,9 @@ be provided on that and other installation routes.
 ## Python 2.7 Instructions
 
 Here are instructions for `Python 2.7.10`. Upgrading Python with `brew` is recommended.
-
+```
+brew upgrade python
+```
 Enter the followings shell commands to create a hidden folder where
 the `R` `library(keras)` and `library(kerasformula)` will look for the `Python` 
 copy of `keras`. Do not use the R function `keras::install_keras()`,
@@ -36,15 +38,18 @@ pip install keras
 ```
 Now, open R. You can confirm the install worked as follows.
 ```
-keras::is_keras_available()
-# should return TRUE
-```
-Finally, test a model out.
-
-```
 library(kerasformula)
 out <- kms(mpg~., mtcars, verbose=0)
 ```
+### Troubleshooting Python 2.7 install
+First, check whether `keras` installed correctly.
+```
+keras::is_keras_available()
+```
+If that returns `TRUE` but the `kerasformula` example above does not work, 
+it is because
+
+
 The version requirements on both the `R` and the `Python` side are very strict. Without current versions at least certain data objects in `R` will be mishandled by `Python`, throwing an error, even before the model is estimated in `Tensorflow`. 
 These instructions have been tested on both `R 3.5.0` and `R 3.6.0`.
 Here is the session info for the latter:
