@@ -30,9 +30,9 @@ pip3 install jupyter_client ipykernel numpy pandas matplotlib jupyter
 Now open R.
 ```R
 if(!require(keras)) install.packages("keras")
-if(!require(kerasformula)) install.packages("kerasformula")
+if(!require(kerasformula)) devtools::install_github("rdrr1990/kerasformula")
 
-use_python("/usr/local/bin/python3")
+reticulate::use_python("/usr/local/bin/python3")
 ```
 You can confirm the install worked as follows.
 ```R
@@ -111,7 +111,7 @@ sudo python get-pip.py
 ```
 Next install the following packages...
 
-```
+```console
 pip install --upgrade setuptools utils np_utils
 pip install tensorflow
 pip install keras
@@ -119,7 +119,7 @@ pip install keras
 Now, open R.
 ```R
 if(!require(keras)) install.packages("keras")
-if(!require(kerasformula)) install.packages("kerasformula")
+if(!require(kerasformula)) devtools::install_github("rdrr1990/kerasformula")
 ```
 You can confirm the install worked as follows.
 ```R
