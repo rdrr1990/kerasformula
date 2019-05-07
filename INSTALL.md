@@ -47,7 +47,7 @@ First, check whether `keras` installed correctly.
 keras::is_keras_available()
 ```
 If that returns `TRUE` but the `kerasformula` example above does not work, 
-it is because
+it is likely because either `Python` is outdated or some of the dependencies are.
 
 
 The version requirements on both the `R` and the `Python` side are very strict. Without current versions at least certain data objects in `R` will be mishandled by `Python`, throwing an error, even before the model is estimated in `Tensorflow`. 
