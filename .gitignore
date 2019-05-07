@@ -6,8 +6,8 @@ README.Rmd
 build.R
 R/scratchwork*.R
 .httr-oauth
-.DS_Store 
-*.Rcheck/ 
+.DS_Store
+*.Rcheck/
 kerasformula.Rproj
 examples/**/*Rmd
 examples/*Rmd
@@ -19,5 +19,6 @@ src/loss.py
 R/.DS_store
 R/lstm.R
 examples/.DS_Store
-short_course/*.Rmd
+short_course/
 old/
+compatibility

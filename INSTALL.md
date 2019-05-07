@@ -39,6 +39,17 @@ You can confirm the install worked as follows.
 library(kerasformula)
 out <- kms(mpg~., mtcars, verbose=0)
 ```
+
+### Troubleshooting Python3 Installation
+
+Check the path for `python3`. In `R`:
+```console
+system("which python3")
+```
+Then use that path with the `reticulate::use_python` command shown above.
+
+If that's not the issue, upgrade Python to be at least 3.7.3.
+
 The version requirements on both the `R` and the `Python` side are very strict. Without current versions at least certain data objects in `R` will be mishandled by `Python`, throwing an error, even before the model is estimated in `Tensorflow`. 
 These instructions have been tested on both `R 3.5.0` and `R 3.6.0`.
 Here is the session info for the latter:
@@ -74,16 +85,6 @@ loaded via a namespace (and not attached):
 [29] pkgconfig_2.0.2  
 ```
 
-
-### Troubleshooting Python3 Installation
-
-Check the path for `python3`. In `R`:
-```console
-system("which python3")
-```
-Then use that path with the `reticulate::use_python` command shown above.
-
-If that's not the issue, upgrade Python to be at least 3.7.3.
 
 ## Python 2.7 Instructions
 
