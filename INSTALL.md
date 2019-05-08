@@ -12,7 +12,7 @@ need to update the packages mentioned below but more detail will
 be provided on that and other installation routes.)
 
 
-## Python 3.x Instructions
+## Python3 Instructions
 
 These instructions were confirmed using `Python 3.7.3` (on `Mac OSX Sierra 10.12.6`). Enter the following shell command:
 ```console
@@ -85,10 +85,35 @@ loaded via a namespace (and not attached):
 [29] pkgconfig_2.0.2  
 ```
 
+## Python 2.7
 
-## Python 2.7 Instructions
+In terminal, check to see if your version of `pip` is new enough to install packages.
+```console
+pip install utils np_utils
+```
+If that command throws an error about internet protocol security  ( [details on Stack]() ), upgrade pip as follows:
+```console
+curl https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+```
+Next, install the following libraries
+```console
+pip install utils np_utils
+pip install --upgrade setuptools
+pip install --upgrade tensorflow
+pip install --upgrade keras
+```
 
-Here are instructions for `Python 2.7.10`. Upgrading Python with `brew` is recommended.
+
+## Python 2.7 in a Virtual Environment
+
+Here are instructions for `Python 2.7.10` in a virtual environment. 
+(These instrucitons will accomplish what `keras::install_keras` aims to
+by default. However, due to some of the issues discussed below, these
+are recommended instead of that configuration function.)
+These is the most complicated route, in part because the `Python 2` 
+that ships with many Macs contains a no longer functioning version 
+of pip. Upgrading Python with `brew` is recommended.
 ```console
 brew upgrade python
 ```
@@ -116,7 +141,25 @@ pip install --upgrade setuptools utils np_utils
 pip install tensorflow
 pip install keras
 ```
-Now, open R.
+Check the path to `Python`, which you'll need in a moment.
+```console
+which python
+```
+Now, open `R`.
+```R
+if(!require(keras)) install.packages("keras")
+if(!require(kerasformula)) devtools::install_github("rdrr1990/kerasformula")
+```
+Let `R` know about the version of `Python` you want:
+```R
+reticulate::use_python("/usr/bin/python")
+```
+You can confirm the install worked as follows.
+```R
+library(kerasformula)
+out <- kms(mpg~., mtcars, verbose=0)
+```
+
 ```R
 if(!require(keras)) install.packages("keras")
 if(!require(kerasformula)) devtools::install_github("rdrr1990/kerasformula")
@@ -126,7 +169,7 @@ You can confirm the install worked as follows.
 library(kerasformula)
 out <- kms(mpg~., mtcars, verbose=0)
 ```
-### Troubleshooting Python 2.7 install
+### Troubleshooting Python 2.7 virtual environment install
 
 If the above `kms` command throws an error, 
 check whether `keras` installed correctly.
