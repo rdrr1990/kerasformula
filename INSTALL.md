@@ -21,10 +21,6 @@ The following instructions are lightly adapted from [here](https://irudnyts.gith
 pip3 install tensorflow
 pip3 install keras
 ```
-[//]: # To skip `Anaconda`'s bundling, which isn't necessary for `kerasformula`, the following packages are recommended too:
-[//]: # ```console
-[//]: # pip3 install jupyter_client ipykernel numpy pandas matplotlib jupyter
-[//]: # ```
 Now open R.
 ```R
 if(!require(keras)) install.packages("keras")
