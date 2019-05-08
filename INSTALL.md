@@ -42,8 +42,8 @@ out <- kms(mpg~., mtcars, verbose=0)
 
 ### Troubleshooting Python3 Installation
 
-Check the path for `python3`. In `R`:
-```console
+If the above `kms` command throws an error, check the path for `python3`. In `R`:
+```R
 system("which python3")
 ```
 Then use that path with the `reticulate::use_python` command shown above.
@@ -127,7 +127,9 @@ library(kerasformula)
 out <- kms(mpg~., mtcars, verbose=0)
 ```
 ### Troubleshooting Python 2.7 install
-First, check whether `keras` installed correctly.
+
+If the above `kms` command throws an error, 
+check whether `keras` installed correctly.
 ```R
 keras::is_keras_available()
 ```
