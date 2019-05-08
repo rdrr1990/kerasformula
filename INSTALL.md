@@ -23,8 +23,8 @@ pip3 install keras
 ```
 Now open R.
 ```R
-if(!require(keras)) install.packages("keras")
-if(!require(kerasformula)) devtools::install_github("rdrr1990/kerasformula")
+ install.packages("keras")
+devtools::install_github("rdrr1990/kerasformula")
 
 reticulate::use_python("/usr/local/bin/python3")
 ```
@@ -141,8 +141,8 @@ which python
 ```
 Now, open `R`.
 ```R
-if(!require(keras)) install.packages("keras")
-if(!require(kerasformula)) devtools::install_github("rdrr1990/kerasformula")
+install.packages("keras")
+devtools::install_github("rdrr1990/kerasformula")
 ```
 Let `R` know about the version of `Python` you want:
 ```R
@@ -155,8 +155,8 @@ out <- kms(mpg~., mtcars, verbose=0)
 ```
 
 ```R
-if(!require(keras)) install.packages("keras")
-if(!require(kerasformula)) devtools::install_github("rdrr1990/kerasformula")
+ install.packages("keras")
+devtools::install_github("rdrr1990/kerasformula")
 ```
 You can confirm the install worked as follows.
 ```R
