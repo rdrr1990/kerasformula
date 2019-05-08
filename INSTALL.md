@@ -3,13 +3,11 @@
 This document provides install instructions to handle recent
 version changes in both the relevant `R` and `Python` libraries.
 
-Choose either `Python 3.x` (recommended) or `Python 2.7`. The version 
+Choose either `Python3` (recommended) or `Python2.7` or `Python2.7 in a Virtual Environment` (most complicated). The version 
 requirements are very **strict** on both `R` and the `Python` side. Though particular combinations of older libraries
-still work, in general, upgrading everything is recommended.
-
-(`Conda` environments likely still 
-need to update the packages mentioned below but more detail will 
-be provided on that and other installation routes.)
+still work, in general, **upgrading everything is recommended**. 
+(`Conda` environments likely still need to update the packages mentioned below, 
+especially `tensorflow` and `keras`.)
 
 
 ## Python3 Instructions
@@ -23,10 +21,10 @@ The following instructions are lightly adapted from [here](https://irudnyts.gith
 pip3 install tensorflow
 pip3 install keras
 ```
-To skip `Anaconda`'s bundling, which isn't necessary for `kerasformula`, the following packages are recommended too:
-```console
-pip3 install jupyter_client ipykernel numpy pandas matplotlib jupyter
-```
+[//]: # To skip `Anaconda`'s bundling, which isn't necessary for `kerasformula`, the following packages are recommended too:
+[//]: # ```console
+[//]: # pip3 install jupyter_client ipykernel numpy pandas matplotlib jupyter
+[//]: # ```
 Now open R.
 ```R
 if(!require(keras)) install.packages("keras")
@@ -85,7 +83,7 @@ loaded via a namespace (and not attached):
 [29] pkgconfig_2.0.2  
 ```
 
-## Python 2.7
+## Python2.7
 
 In terminal, check to see if your version of `pip` is new enough to install packages.
 ```console
@@ -105,7 +103,7 @@ pip install --upgrade keras
 ```
 
 
-## Python 2.7 in a Virtual Environment
+## Python2.7 in a Virtual Environment
 
 Here are instructions for `Python 2.7.10` in a virtual environment. 
 (These instrucitons will accomplish what `keras::install_keras` aims to
