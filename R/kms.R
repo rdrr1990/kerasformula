@@ -22,6 +22,7 @@
 #' @param loss To be passed to keras::compile. Defaults to "binary_crossentropy", "categorical_crossentropy", or "mean_squared_error" based on input_formula and data.
 #' @param metrics Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to "mean_absolute_error" and "mean_absolute_percentage_error" for continuous and c("accuracy") for binary/categorical (as well whether whether examples are correctly classified in one of the top five most popular categories or not if the number of categories K > 20).  
 #' @param optimizer To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.
+#' @param optimizer_args Advanced optional arguments such as learning rate, decay, and momentum to be passed to via a named list. See library(keras) help for the arguments each optimizer accepts. For example, ?optimizer_adam accepts optimizer_adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, epsilon = NULL, decay = 0, amsgrad = FALSE, clipnorm = NULL, clipvalue = NULL).
 #' @param scale_continuous How to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = 'zero_one'' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.
 #' @param sparse_data Default == FALSE. If TRUE, X is constructed by sparse.model.matrix() instead of model.matrix(). Recommended to improve memory usage if there are a large number of categorical variables or a few categorical variables with a large number of levels. May compromise speed, particularly if X is mostly numeric.
 #' @param drop_intercept TRUE by default.     
@@ -52,6 +53,14 @@
 #'                 activity_regularizer = "regularizer_l1",
 #'                 Nepochs = 1, verbose=0
 #'                 )
+#'                 
+#'  # example with learning rate               
+#'  
+#'  company <- kms(make ~ ., mtcars, units = c(10,10), optimizer_args = list(lr = 0.03))                             
+#'  # see help file for each optimizer for advanced options.
+#'  # ?optimizer_adam to see options for default optimizer
+#'  
+#'                                
 #'  # ?predict.kms_fit to see how to predict on newdata
 #' }else{
 #'    cat("Please run install_keras() before using kms(). ?install_keras for options like gpu.")
@@ -78,7 +87,9 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
                 activity_regularizer = "regularizer_l1",
                 embedding = FALSE,
                 pTraining = 0.8, validation_split = 0.2, Nepochs = 15, batch_size = NULL, 
-                loss = NULL, metrics = NULL, optimizer = "optimizer_adam",
+                loss = NULL, metrics = NULL, 
+                optimizer = "optimizer_adam",
+                optimizer_args = list(), # named list based on e.g. optimizer_adam
                 scale_continuous = "zero_one", drop_intercept=TRUE,
                 sparse_data = FALSE,
                 seed = list(seed = NULL, disable_gpu=FALSE, disable_parallel_cpu = FALSE), 
@@ -362,7 +373,7 @@ kms <- function(input_formula, data, keras_model_seq = NULL,
     
     keras_model_seq %>% compile(
       loss = loss,
-      optimizer = do.call(optimizer, args = list()),
+      optimizer = do.call(optimizer, args = optimizer_args),
       metrics = metrics
     )
     
