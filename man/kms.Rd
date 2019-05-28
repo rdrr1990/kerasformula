@@ -56,9 +56,9 @@ kms(input_formula, data, keras_model_seq = NULL, N_layers = 3,
 
 \item{metrics}{Additional metric(s) beyond the loss function to be passed to keras::compile. Defaults to "mean_absolute_error" and "mean_absolute_percentage_error" for continuous and c("accuracy") for binary/categorical (as well whether whether examples are correctly classified in one of the top five most popular categories or not if the number of categories K > 20).}
 
-\item{optimizer}{To be passed to keras::compile. Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf.}
+\item{optimizer}{Defaults to "optimizer_adam", an algorithm for first-order gradient-based optimization of stochastic objective functions introduced by Kingma and Ba (2015) here: https://arxiv.org/pdf/1412.6980v8.pdf. Other options: adadelta, adamax, adagrad, nadam, rmsprop, and sgd. To be passed to keras::compile().}
 
-\item{optimizer_args}{Advanced optional arguments such as learning rate, decay, and momentum to be passed to via a named list. See library(keras) help for the arguments each optimizer accepts. For example, ?optimizer_adam accepts optimizer_adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, epsilon = NULL, decay = 0, amsgrad = FALSE, clipnorm = NULL, clipvalue = NULL).}
+\item{optimizer_args}{Advanced optional arguments such as learning rate, decay, and momentum to be passed to via a named list. See library(keras) help for the arguments each optimizer accepts. For example, ?optimizer_adam accepts optimizer_adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, epsilon = NULL, decay = 0, amsgrad = FALSE, clipnorm = NULL, clipvalue = NULL) and optimizer_sgd() accepts optimizer_sgd(lr = 0.01, momentum = 0, decay = 0, nesterov = FALSE, clipnorm = NULL, clipvalue = NULL).}
 
 \item{scale_continuous}{How to scale each non-binary column of the training data (and, if y is continuous, the outcome). The default 'scale_continuous = 'zero_one'' places each non-binary column of the training model matrix on [0, 1]; 'scale_continuous = z' standardizes; 'scale_continuous = NULL' leaves the data on its original scale.}
 
