@@ -5,7 +5,7 @@
 \title{predict.kms_fit}
 \usage{
 \method{predict}{kms_fit}(object, newdata, batch_size = 32,
-  verbose = 0, ...)
+  verbose = 0, y_test = NULL, ...)
 }
 \arguments{
 \item{object}{output from kms()}
@@ -16,10 +16,12 @@
 
 \item{verbose}{0 ot 1, to be passed to keras::predict_classes. Default == 0.}
 
+\item{y_test}{(optional). Measures of fit and confusion matrix returned if provided.}
+
 \item{...}{additional parameters to build the sparse matrix X_test.}
 }
 \value{
-list containing predictions, y_test, confusion matrix.
+list containing predictions (or classfications) and/or measures of fit and confusion matrix.
 }
 \description{
 predict function for kms_fit object. Places test data on same scale that the training data were by kms(). Wrapper for keras::predict_classes(). Creates a sparse model matrix with the same columns as the training data, some of which may be 0.

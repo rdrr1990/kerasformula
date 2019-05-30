@@ -6,8 +6,9 @@
 #' @param newdata new data. Performs merge so that X_test has the same columns as the object created by kms_fit using the user-provided input formula. y_test is also generated from that formula.
 #' @param batch_size To be passed to keras::predict_classes. Default == 32.
 #' @param verbose 0 ot 1, to be passed to keras::predict_classes. Default == 0.
+#' @param y_test (optional). Measures of fit and confusion matrix returned if provided. 
 #' @param ... additional parameters to build the sparse matrix X_test.
-#' @return list containing predictions, y_test, confusion matrix.
+#' @return list containing predictions (or classfications) and/or measures of fit and confusion matrix.
 #' @examples 
 #' if(is_keras_available()){
 #' 
@@ -29,7 +30,7 @@
 #' @importFrom Matrix Matrix
 #' @method predict kms_fit
 #' @export
-predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, ...) {
+predict.kms_fit <- function (object, newdata, batch_size = 32, verbose=0, y_test = NULL, ...) {
   
   if (class(object) != "kms_fit") {
     warning("Object not of class 'kms_fit'")
